@@ -8,7 +8,7 @@ TokenHelper::vars () {
 	TH_CONFIG="$TH_HOME/config.sh"
 	TH_TOKEN_DIR="$TH_HOME/tokens"
 	TH_TOKEN_FILE="$TH_TOKEN_DIR/$INSTANCE"
-	[[ $APP == csgo ]] && TH_APPID=730
+	[[ $APP == cs2 ]] && TH_APPID=730
 	mkdir -p "$TH_HOME"
 	mkdir -p "$TH_TOKEN_DIR"
 	[[ -e $TH_CONFIG ]] || cat > "$TH_CONFIG" <<-EOF

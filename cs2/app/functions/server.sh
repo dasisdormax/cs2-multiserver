@@ -64,7 +64,7 @@ App::buildLaunchCommand () {
 
 	######## GENERATE LAUNCH COMMAND ########
 	LAUNCH_ARGS=(
-		-game csgo
+		-game cs2
 		-console
 		$USE_RCON
 		-tickrate $TICKRATE

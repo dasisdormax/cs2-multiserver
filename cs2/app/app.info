@@ -10,8 +10,8 @@
 
 
 # The human-readable APP names
-APP_SHORT="CS:GO"
-APP_LONG="Counter-Strike: Global Offensive"
+APP_SHORT="CS2"
+APP_LONG="Counter-Strike 2"
 
 # SERVER_EXEC: The executable file of the server, within INSTANCE_DIR
 SERVER_EXEC="srcds_run"

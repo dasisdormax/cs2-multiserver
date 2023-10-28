@@ -9,7 +9,7 @@
 # Tip: Use grep ::hookable -r * to find functions to hook.
 
 # If you miss a hookable function, open an issue or PR at
-# https://github.com/dasisdormax/csgo-multiserver
+# https://github.com/dasisdormax/cs2-multiserver
 
 ::registerHook before~Core.CommandLine::exec AddonTemplate::info
 

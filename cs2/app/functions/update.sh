@@ -68,7 +68,7 @@ App::printAdditionalConfig () {
 }
 
 
-# Check, if an update to the CS:GO Base Installation is available
+# Check, if an update to the CS2 Base Installation is available
 # returns 0, if the most current version is installed
 #         1, if an update is available
 #         2, if the game is not installed yet

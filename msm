@@ -13,7 +13,7 @@ about-this-program () { cat <<EOF
    Launch and set up your ${APP_LONG} dedicated Servers.
    Report bugs, get more information and receive updates to this script at:
 
-                $(printf "\x1b[36;1m%s\x1b[m"               "https://github.com/dasisdormax/csgo-multiserver")
+                $(printf "\x1b[36;1m%s\x1b[m"               "https://github.com/dasisdormax/cs2-multiserver")
 
 --------------------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ get-location () {
 	THIS_DIR="$(dirname "$THIS_SCRIPT")"
 
 	# Calculate the default APP name out of the way this program has been invoked with
-	__APP__=csgo
+	__APP__=cs2
 	[[ $THIS_BASENAME =~ [-_] ]] && __APP__=${THIS_BASENAME%%[-_]*}
 	APP=${APP-$__APP__}
 }
