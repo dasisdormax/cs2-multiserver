@@ -1,6 +1,7 @@
 #! /bin/bash
+## vim: noet:sw=0:sts=0:ts=4
 
-# (C) 2016 Maximilian Wende <maximilian.wende@gmail.com>
+# (C) 2016-2017 Maximilian Wende <dasisdormax@mailbox.org>
 #
 # This file is licensed under the Apache License 2.0. For more information,
 # see the LICENSE file or visit: http://www.apache.org/licenses/LICENSE-2.0
@@ -53,14 +54,18 @@ Core.Server::requestStart () {
 	log <<< "Starting $INSTANCE_TEXT ..."
 
 	# Load instance configuration
-	App::buildLaunchCommand || return
+	::hookable App::buildLaunchCommand || return
+	LAUNCH_DIR="${LAUNCH_DIR-"$INSTANCE_DIR"}"
+	LAUNCH_CMD_REDACTED=$(echo "$LAUNCH_CMD" | sed -E 's/[0-9a-fA-F]{10,}([0-9a-fA-F]{6})/******\1/g')
 
-	info <<< "The launch command is:"
-	fmt -w67 <<< "$LAUNCH_CMD" | sed 's/^/        /' | catinfo
+	info <<< "Server working directory: **$LAUNCH_DIR**"
+	info <<< "Server launch command:"
+	fmt -w67 <<< "$LAUNCH_CMD_REDACTED" | sed 's/^/        /' | catinfo
 
 	cat > "$TMPDIR/server-start.sh"   <<-EOF
 			#! /bin/bash
 			$(declare -f timestamp)
+			cd "$LAUNCH_DIR"
 			unbuffer -p $LAUNCH_CMD | tee "$LOGDIR/\$(timestamp)-server.log"
 			echo \$? > "$TMPDIR/server.exit-code"
 		EOF
@@ -76,7 +81,7 @@ Core.Server::requestStart () {
 
 	# LAUNCH! (in tmux)
 
-	tmux -f "$THIS_DIR/cfg/tmux.conf" -S "$SOCKET" new-session -n "server-control" -s "$APP@$INSTANCE" -d /bin/bash "$INSTANCE_DIR/msm.d/tmp/server-control.sh"
+	tmux -f "$THIS_DIR/tmux.conf" -S "$SOCKET" new-session -n "server-control" -s "$APP@$INSTANCE" -d /bin/bash "$INSTANCE_DIR/msm.d/tmp/server-control.sh"
 
 	success <<-EOF
 		**$INSTANCE_TEXT** started successfully!

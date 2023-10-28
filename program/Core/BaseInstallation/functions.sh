@@ -1,6 +1,7 @@
 #! /bin/bash
+## vim: noet:sw=0:sts=0:ts=4
 
-# (C) 2016 Maximilian Wende <maximilian.wende@gmail.com>
+# (C) 2016-2017 Maximilian Wende <dasisdormax@mailbox.org>
 #
 # This file is licensed under the Apache License 2.0. For more information,
 # see the LICENSE file or visit: http://www.apache.org/licenses/LICENSE-2.0
@@ -20,8 +21,8 @@ Core.BaseInstallation::applyPermissions() {
 
 	chmod -R a+rX "$INSTALL_DIR"
 
-	chmod -R o-rx "$INSTALL_DIR/msm.d/tmp"
-	chmod -R o-rx "$INSTALL_DIR/msm.d/log"
+	chmod -R o-rx "$TMPDIR"
+	chmod -R o-rx "$LOGDIR"
 }
 
 
@@ -66,13 +67,13 @@ Core.BaseInstallation::create () (
 	rm -rf "$INSTALL_DIR/msm.d" 2>/dev/null
 
 	# Create new configuration
-	mkdir "$INSTALL_DIR/msm.d"
+	mkdir -p "$INSTALL_DIR/msm.d"
 	echo $APP > "$INSTALL_DIR/msm.d/app"
 	touch "$INSTALL_DIR/msm.d/is-admin" # Mark as base installation
 
 	# Create temporary and logging directories
-	mkdir -m o-rwx "$TMPDIR"
-	mkdir -m o-rwx "$LOGDIR"
+	mkdir -p -m o-rwx "$TMPDIR"
+	mkdir -p -m o-rwx "$LOGDIR"
 )
 
 
@@ -122,7 +123,7 @@ Core.BaseInstallation::updateFromClone () {
 	local SOURCE="$(cat "$INSTALL_DIR/msm.d/cloned-from")"
 	if
 		rsync -rlptz --info=progress2 --no-inc-recursive \
-		--include="/msm.d/cfg" --exclude="/msm.d/*" "$SOURCE/" "$INSTALL_DIR"
+		--exclude="/msm.d/*" "$SOURCE/" "$INSTALL_DIR"
 	then
 		success <<< "The server files have been cloned successfully."
 	else

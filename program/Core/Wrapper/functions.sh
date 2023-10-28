@@ -1,6 +1,7 @@
 #! /bin/bash
+## vim: noet:sw=0:sts=0:ts=4
 
-# (C) 2016 Maximilian Wende <maximilian.wende@gmail.com>
+# (C) 2016-2017 Maximilian Wende <dasisdormax@mailbox.org>
 #
 # This file is licensed under the Apache License 2.0. For more information,
 # see the LICENSE file or visit: http://www.apache.org/licenses/LICENSE-2.0
@@ -52,7 +53,7 @@ Core.Wrapper::stopServerForUpdate () {
 	local TIME_DIFF=$(( DEADLINE - $(date +%s) - 30 ))
 
 	if (( TIME_DIFF > 0 )) && Core.Wrapper::isServerRunning; then
-		App::announceUpdate
+		try App::announceUpdate
 		sleep $TIME_DIFF
 	fi
 

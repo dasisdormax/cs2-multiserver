@@ -1,19 +1,10 @@
 #! /bin/bash
+## vim: noet:sw=0:sts=0:ts=4
 
-# (C) 2016 Maximilian Wende <maximilian.wende@gmail.com>
+# (C) 2016-2017 Maximilian Wende <dasisdormax@mailbox.org>
 #
 # This file is licensed under the Apache License 2.0. For more information,
 # see the LICENSE file or visit: http://www.apache.org/licenses/LICENSE-2.0
-
-
-
-
-############################### COMMON VARIABLES ################################
-
-THIS_DIR="$(dirname "${BASH_SOURCE[0]}")"
-
-USER=$(whoami) # just in case
-USER_DIR="$HOME/msm.d"
 
 
 
@@ -52,11 +43,21 @@ USER_DIR="$HOME/msm.d"
 
 # Execute a file and set the context for the colon function
 # Further parameters are passed to the executed scripts
-.file () { [[ -f $1 ]] && builtin . "$@"; }
+.file () { [[ -f $1 ]] || return 127 && builtin . "$@"; }
 
 
 # .conf function: execute a config file, preferring user config over global config
-.conf () { . "$USER_DIR/$@" || . "$THIS_DIR/$@"; }
+# NOTE: A global config file can return any error code except 127 (file not found)
+# >     to prevent the execution of user config files
+.conf () {
+	.file "$THIS_DIR/$@"
+	CODE=$?
+	if (( ! CODE || CODE == 127 )); then
+		.file "$USER_DIR/$@"
+		(( $? == 127 && CODE == 127 )) && return 127
+	fi
+	applyDefaults
+}
 
 
 # override colon builtin: execute a file relative to the current file's base directory
@@ -67,9 +68,26 @@ USER_DIR="$HOME/msm.d"
 }
 
 
+# apply default values for variables
+applyDefaults () {
+	local target
+	local source
+	for source in ${!__*}; do
+		[[ $source =~ __$ ]] || continue
+		# Strip underscores from varname
+		target=${source%__}
+		target=${target#__}
+		[[ ! ${!target} ]] && declare -g $target="${!source}"
+		unset $source
+	done
+}
 
 
-########################## LOAD GENERAL CONFIGURATION ##########################
 
-# This sets the default parameters such as $APP, if not given through the environment
-.conf "cfg/defaults.conf"
+
+############################### COMMON VARIABLES ################################
+
+
+UPDATE_WAITTIME=75
+USER=$(whoami) # just in case
+USER_DIR="$HOME/msm.d"

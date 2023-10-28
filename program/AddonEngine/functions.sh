@@ -1,6 +1,7 @@
 #! /bin/bash
+## vim: noet:sw=0:sts=0:ts=4
 
-# (C) 2016 Maximilian Wende <maximilian.wende@gmail.com>
+# (C) 2016-2017 Maximilian Wende <dasisdormax@mailbox.org>
 #
 # This file is licensed under the Apache License 2.0. For more information,
 # see the LICENSE file or visit: http://www.apache.org/licenses/LICENSE-2.0
@@ -60,7 +61,6 @@
 # modifications and triggers their load event
 ::loadModules () {
 	local module
-	local funs
 	local errno
 
 	# first: load module functions
@@ -68,11 +68,11 @@
 		# No Namespace filtering, you have to trust the module anyway to not mess stuff up
 		::execHandler $module functions && Modules="$module $Modules" || errno=1; done
 
-	# TODO: second: update functions with before and after handlers
-
-	# third: execute load handler
+	# second: execute load handler
 	for module in $*; do
 		::execHandler $module load; done
+
+	return $errno
 }
 
 ::moduleDir () {
@@ -94,11 +94,60 @@
 	local dir="$(::moduleDir $1)" && . "$dir/$2"
 }
 
+###### Hook system for addons ######
+ALL_HOOKS=" "
+
+::hookable () {
+	[[ $1 ]] && ::hook "before~$@" && "$@" && ::hook "after~$@"
+}
+
+# Executes the functions registered to the given hook.
+#
+# Multiple functions may be registered to a single hook. They will be executed in the
+# order they were registered. If a function is not found or returns false, this function
+# will stop executing and return false too
+# The hook is passed the hook name and all extra arguments given
+::hook () {
+	local line
+	for line in $ALL_HOOKS; do
+		[[ $line =~ ^$1@ ]] || continue
+		${line#$1@} "$@" || return
+	done
+	return 0
+}
+
+# Registers a function ($2) to a named hook ($1)
+::registerHook () {
+	local newhook="$1@$2"
+	ALL_HOOKS="${ALL_HOOKS//$newhook }$newhook "
+}
+
+
+
+::loadAddons () {
+	local addon
+	for addon in $MSM_ADDONS; do
+		::add $addon
+	done
+	::update
+}
+
 ::loadApp () {
 	local dir
-	local candidates=( "$THIS_DIR/apps/$APP" "$USER_DIR/apps/$APP" )
+	# The global app directory has priority over the user's
+	local candidates=( "$THIS_DIR/$APP/app" "$USER_DIR/$APP/app" )
 	for dir in ${candidates[@]}; do
-		[[ -d $dir ]] && . "$dir/app.info" && . "$dir/functions" && return 0; done
+		if [[ -r $dir/app.info ]]; then
+			# Set app-specific variables
+			APP_DIR="$dir"
+			CFG_DIR="$USER_DIR/$APP/cfg"
+			CFG="$CFG_DIR/defaults.conf"
+
+			# Load the app itself
+			.file "$dir/app.info" && . "$dir/functions"
+			return
+		fi
+	done
 	return 1
 }
 

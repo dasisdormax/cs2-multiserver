@@ -1,6 +1,7 @@
 #! /bin/bash
+## vim: noet:sw=0:sts=0:ts=4
 
-# (C) 2016 Maximilian Wende <maximilian.wende@gmail.com>
+# (C) 2016-2017 Maximilian Wende <dasisdormax@mailbox.org>
 #
 # This file is licensed under the Apache License 2.0. For more information,
 # see the LICENSE file or visit: http://www.apache.org/licenses/LICENSE-2.0
@@ -37,7 +38,12 @@ requireAdmin () {
 
 
 Core.Setup::loadConfig () {
-	.conf "cfg/app-$APP.conf" && Core.Setup::validateConfig
+	if ! .conf "$APP/cfg/defaults.conf"; then
+		# Try migrating from older MSM versions
+		.conf "cfg/app-$APP.conf" || return;
+		[[ -O $USER_DIR ]] && Core.Setup::writeConfig && mv "$USER_DIR/cfg/app-$APP.conf"{,.old}
+	fi
+	Core.Setup::validateConfig
 }
 
 
@@ -71,12 +77,15 @@ Core.Setup::validateConfig () {
 
 
 Core.Setup::writeConfig () {
-	CFG="$USER_DIR/cfg/app-$APP.conf"
 	if Core.Setup::validateConfig; then
-		Core.Setup::printConfig > "$CFG" || fatal <<-EOF
+		if mkdir -p "$CFG_DIR" && Core.Setup::printConfig > "$CFG"; then
+			[[ $USER != $ADMIN ]] || make-readable "$CFG"
+		else
+			fatal <<-EOF
 				Error writing the configuration to **$CFG**!
 				You may lack the necessary permissions to access the file!
 			EOF
+		fi
 	else
 		error <<< "Invalid configuration!"
 	fi
@@ -86,13 +95,16 @@ Core.Setup::writeConfig () {
 Core.Setup::printConfig () {
 	cat <<-EOF
 		#! /bin/bash
-		# This is a configuration file for CS:GO Multi Server Manager
-		ADMIN=$ADMIN
+		# This is a configuration file for Multi Server Manager with APP=$APP
+
+		__ADMIN__=$ADMIN
 		INSTALL_DIR="$INSTALL_DIR"
 		DEFAULT_INSTANCE="$DEFAULT_INSTANCE"
+		MSM_ADDONS="$MSM_ADDONS"
 	EOF
 
-	App::printAdditionalConfig
+	try App::printAdditionalConfig
+	true
 }
 
 
@@ -105,35 +117,34 @@ Core.Setup::importFrom () {
 	out <<< ""
 	out <<< "Trying to import the configuration of user **$IMPORT_FROM** ..."
 
-	# Check if user exists and has a configuration
-
-	local ADMIN_HOME="$(eval echo ~$IMPORT_FROM)"
-	[[ -r $ADMIN_HOME ]] || error <<-EOF || return
-			User **$IMPORT_FROM** does not exist or their home
-			directory is not readable!
-		EOF
-
-	[[ -r $ADMIN_HOME/msm.d/cfg/app-$APP.conf ]] || {
+	# Try importing that user's configuration
+	Core.Setup::loadConfigOf $IMPORT_FROM
+	local CODE=$?
+	# If the config file does not exist, try switching to that user
+	if (( CODE == 127 )); then
 		warning <<-EOF
-			User **$IMPORT_FROM** has no configuration that we can import settings
-			from. You may, though, switch users and create a configuration on
-			that user's account.
+			Import from user **$IMPORT_FROM** failed. That user either has no configuration
+			to import from, or that configuration is not accessible. You may, though, switch
+			to that user and fix these problems.
 
 			You will have to confirm switching users with your sudo password. (CTRL-C to cancel)
 
 		EOF
 
 		sudo -iu $IMPORT_FROM \
-			MSM_LOGFILE="$MSM_LOGFILE" MSM_DEBUG=$MSM_DEBUG ADMIN=$ADMIN \
+			MSM_LOGFILE="$MSM_LOGFILE" MSM_DEBUG=$MSM_DEBUG __ADMIN__=$ADMIN \
 			"$THIS_COMMAND" setup ||
 		{
 			out <<< "Cancelled the import from user $IMPORT_FROM ..."
 			return 1
 		}
-	}
 
-	# Import their configuration
-	Core.Setup::loadConfigOf $IMPORT_FROM || error <<-EOF || return
+		# Try importing again with those changes made
+		Core.Setup::loadConfigOf $IMPORT_FROM
+		CODE=$?
+	fi
+
+	(( CODE )) && error <<-EOF && return $CODE
 			The configuration of user $IMPORT_FROM contains errors!
 		EOF
 
@@ -155,8 +166,18 @@ Core.Setup::importFrom () {
 ################################# INITIAL SETUP #################################
 
 Core.Setup::beginSetup () {
-	out <<-EOF
+	out <<< ""
 
+	# Check, if config exists already
+	[[ -e "$CFG" ]] && {
+		info <<-EOF
+			The config file **$CFG** already exists!
+			If you want to start over, delete that file and run this command again.
+		EOF
+		return
+	}
+
+	out <<-EOF
 		-------------------------------------------------------------------------------
 		                CS:GO Multi-Mode Server Manager - Initial Setup
 		-------------------------------------------------------------------------------
@@ -165,7 +186,7 @@ Core.Setup::beginSetup () {
 		Before advancing, be aware of a few things:
 
 		>>  The configuration files will be saved in the directory:
-		        **$USER_DIR/cfg**
+		        **$CFG_DIR**
 
 		    Make sure to backup any important data in that location.
 
@@ -177,20 +198,13 @@ Core.Setup::beginSetup () {
 	promptY || return
 
 	# Create config directory
-	local CFG_DIR="$USER_DIR/cfg"
-	local CFG="$CFG_DIR/app-$APP.conf"
 	mkdir -p "$CFG_DIR" && [[ -w "$CFG_DIR" ]] || {
 		fatal <<< "No permission to create or write the directory **$CFG_DIR**!"
 		return
 	}
 
-	# Check, if config is writable
-	[[ ! -e "$CFG" || -w "$CFG" ]] || {
-		fatal <<< "No permission to write the configuration file **$CFG**!"
-		return
-	}
-
 	# Ask the user if they wish to import a configuration
+	ADMIN=${ADMIN-$__ADMIN__}
 	if [[ ! $ADMIN ]]; then
 		log <<-EOF
 
@@ -204,8 +218,8 @@ Core.Setup::beginSetup () {
 			game server installation as a base for your own instances, without having
 			to download the server files again.
 
-			If you wish to import the settings from another user, enter their name below.
-			Otherwise, hit enter to create your own configuration.
+			If you wish to import the settings from another user, enter their name
+			below. Otherwise, hit enter to create your own configuration.
 		EOF
 	fi
 
@@ -266,7 +280,7 @@ Core.Setup::setupAsAdmin () {
 	######### Create base installation
 
 	INSTANCE=
-	INSTALL_DIR="$HOME/$APP-base"
+	INSTALL_DIR="$USER_DIR/$APP/base"
 	until Core.BaseInstallation::isExisting; do
 		bold <<-EOF
 
@@ -278,9 +292,9 @@ Core.Setup::setupAsAdmin () {
 
 		EOF
 
-		read -r -p "Game Server Installation Directory (default: ~/$APP-base) " INSTALL_DIR
+		read -r -p "Game Server Installation Directory (default: $USER_DIR/$APP/base) " INSTALL_DIR
 
-		INSTALL_DIR=${INSTALL_DIR:-"$HOME/$APP-base"}
+		INSTALL_DIR=${INSTALL_DIR:-"$USER_DIR/$APP/base"}
 		INSTALL_DIR="$(eval echo "$INSTALL_DIR")"   # expand tilde and stuff
 		INSTALL_DIR="$(readlink -m "$INSTALL_DIR")" # get absolute directory
 
@@ -292,7 +306,7 @@ Core.Setup::setupAsAdmin () {
 	Core.BaseInstallation::applyPermissions
 
 	# Create Config and make it readable
-	chmod o+rx "$USER_DIR" "$CFG_DIR"
+	MSM_ADDONS="TokenHelper"
 	Core.Setup::writeConfig && {
 		log <<< ""
 		success <<-EOF
@@ -306,5 +320,4 @@ Core.Setup::setupAsAdmin () {
 			multiple instances can run simultaneously.
 		EOF
 	}
-	chmod o+rX "$CFG"
 }

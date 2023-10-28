@@ -1,9 +1,10 @@
 #! /bin/bash
-local ADDON_NAME="Addon Manager"
+## vim: noet:sw=0:sts=0:ts=4
 
-local AUTHOR_ALIAS="//chilly™//"
-local AUTHOR_NAME="Maximilian Wende"
-local AUTHOR_EMAIL="maximilian.wende@gmail.com"
+local ADDON_NAME="Addon Template"
+local ADDON_DESCRIPTION="This is an addon template for developers"
+local ADDON_WEBSITE="https://example.com"
+local ADDON_AUTHOR="nickname <email@domain.com>"
 
 # If this addon is specific to a game, specify it here
 # local REQUIRES_APP="csgo"

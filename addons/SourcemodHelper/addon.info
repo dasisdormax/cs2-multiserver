@@ -1,0 +1,7 @@
+#! /bin/bash
+## vim: noet:sw=0:sts=0:ts=4
+
+local ADDON_NAME="Sourcemod Helper"
+local ADDON_DESCRIPTION="This addon helps downloading and configuring MetaMod:Source, Sourcemod, plugins and extensions for each instance."
+local ADDON_WEBSITE="https://github.com/dasisdormax/csgo-multiserver"
+local ADDON_AUTHOR="Maximilian '//chilly™//' Wende <dasisdormax@mailbox.org>"

@@ -1,6 +1,7 @@
 #! /bin/bash
+## vim: noet:sw=0:sts=0:ts=4
 
-# (C) 2016 Maximilian Wende <maximilian.wende@gmail.com>
+# (C) 2016-2017 Maximilian Wende <dasisdormax@mailbox.org>
 #
 # This file is licensed under the Apache License 2.0. For more information,
 # see the LICENSE file or visit: http://www.apache.org/licenses/LICENSE-2.0
@@ -115,14 +116,18 @@ App::isUpToDate () {
 
 # Actually perform a requested update
 # Takes the action (either update or repair) as parameter
-App::performUpdate () {
+App::performUpdate () (
+
+	# Work in base installation directory
+	INSTANCE=
+	Core.Instance::select
 
 	# Prepare SteamCMD script
-	local STEAMCMD_SCRIPT="$TMPDIR/steamcmd-script"
-	local MSM_LOGFILE="$LOGDIR/$(timestamp)-$ACTION.log"
+	STEAMCMD_SCRIPT="$TMPDIR/steamcmd-script"
+	MSM_LOGFILE="$LOGDIR/$(timestamp)-$ACTION.log"
 	cat <<-EOF > "$STEAMCMD_SCRIPT"
-		login anonymous
 		force_install_dir "$INSTALL_DIR"
+		login anonymous
 		app_update 740 $( [[ $ACTION == repair ]] && echo "validate" )
 		quit
 	EOF
@@ -158,4 +163,4 @@ App::performUpdate () {
 	# App::applyInstancePermissions
 
 	return $code
-}
+)

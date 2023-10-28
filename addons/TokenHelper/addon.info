@@ -1,0 +1,7 @@
+#! /bin/bash
+## vim: noet:sw=0:sts=0:ts=4
+
+local ADDON_NAME="Game Server Token Helper"
+local ADDON_DESCRIPTION="This addon uses the Steam Web API to automatically create Game Server Login Tokens (GSLT) for your instances"
+local ADDON_WEBSITE="https://github.com/dasisdormax/csgo-multiserver"
+local ADDON_AUTHOR="Maximilian '//chilly™//' Wende <dasisdormax@mailbox.org>"

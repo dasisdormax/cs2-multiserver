@@ -1,0 +1,70 @@
+#! /bin/bash
+## vim: noet:sw=0:sts=0:ts=4
+
+####################### LICENSE AND COPYRIGHT INFORMATION ########################
+
+about-this-program () { cat <<EOF
+
+================================================================================
+
+   >>>  ${APP_SHORT} Multi Server Manager
+   -----${APP_SHORT//?/-}---------------------
+
+   Launch and set up your ${APP_LONG} dedicated Servers.
+   Report bugs, get more information and receive updates to this script at:
+
+                $(printf "\x1b[36;1m%s\x1b[m"               "https://github.com/dasisdormax/csgo-multiserver")
+
+--------------------------------------------------------------------------------
+
+       Copyright (C) 2016-2021 Maximilian Wende <dasisdormax@mailbox.org>
+
+Licensed under the Apache License, Version 2.0 (the "License");  you may not use
+this  file except in compliance  with the License. You may obtain a  copy of the
+License at:
+                   $(printf "\x1b[36;1m%s\x1b[m"            "http://www.apache.org/licenses/LICENSE-2.0")
+
+Unless required by applicable law or agreed to in writing,  software distributed
+under  the License  is distributed on  an "AS IS"  BASIS,  WITHOUT WARRANTIES OR
+CONDITIONS  OF ANY KIND,  either  express or  implied.  See the  License for the
+specific language governing permissions and limitations under the License.
+
+================================================================================
+EOF
+}
+
+
+
+
+####################### GET LOCATION OF MSM ON THE SYSTEM #######################
+
+# this script's filename and directory
+get-location () {
+	local dirname="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	local __APP__
+
+	THIS_COMMAND="${BASH_SOURCE[0]}"
+	THIS_BASENAME="${THIS_COMMAND##*/}"
+	if [[ $PATH =~ (^|:)$dirname(:|$) ]]; then
+		THIS_COMMAND="$THIS_BASENAME"
+	fi
+
+	THIS_SCRIPT="$(readlink -e "${BASH_SOURCE[0]}")"
+	THIS_DIR="$(dirname "$THIS_SCRIPT")"
+
+	# Calculate the default APP name out of the way this program has been invoked with
+	__APP__=csgo
+	[[ $THIS_BASENAME =~ [-_] ]] && __APP__=${THIS_BASENAME%%[-_]*}
+	APP=${APP-$__APP__}
+}
+
+get-location
+
+
+
+
+############################# ACTUALLY GET STARTED #############################
+
+. "$THIS_DIR/common.sh" # Load common functions, variables and configuration
+
+: "program/main" && main "$@"

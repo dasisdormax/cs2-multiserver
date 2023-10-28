@@ -11,24 +11,30 @@ Launch and set up **Counter-Strike: Global Offensive** Dedicated Servers.
 
 Being specifically designed for LAN environments, it allows you to control many servers running on multiple machines simultaneously. In addition, multiple server instances can share the same base files, saving your precious disk space and bandwidth.
 
-*csgo-multiserver* started as a fork of [csgo-server-launcher](https://github.com/crazy-max/csgo-server-launcher) (which seemed to be designed for rented root servers). By now, all features have been rewritten by scratch.
+*csgo-multiserver* started as a fork of [csgo-server-launcher](https://github.com/crazy-max/csgo-server-launcher), but by now, all features have been rewritten by scratch.
 
-### Release 1.0
+### About Release 2.0
 
-As all the main features of this script are finally working, I declare this as the release 1.0. As I have implemented everything I needed in *csgo-multiserver*, I won't work on adding more features for now. If you find any bugs or problems, I'll be happy to fix them though.
+This is a large update to *csgo-multiserver* with updated configuration and instance directories. Also, this adds experimental support for workshop maps and sourcemod automation.
 
-Feel free to work on *csgo-multiserver* yourself if you have any wishes and ideas for improvements. As an example, the configuration and customization aspect could still be improved. In addition, 'porting' *csgo-multiserver* for other games or applications should be not too difficult.
+While a basic migration script is included, there is still a chance of breaks when upgrading from v1.0, so **make backups before upgrading**. You can find the original version in the [v1 branch](https://github.com/dasisdormax/csgo-multiserver/tree/v1).
+
+If you run into trouble or have a suggestion for extra features, feel free to open an issue or fork and work on *csgo-multiserver* yourself.
 
 
 
 
 ## Currently working features
 
-* SteamCMD and Game Installation, checking for and performing updates
-* CS:GO Server instance creation
-* Instance-specific server configuration (using config files)
-* Running a server basically works (Including logging)! Yay!
-* Copying and controlling instances over the network
+* The basics
+	* SteamCMD and Game Installation, checking for and performing updates
+	* CS:GO Server instance creation
+	* Instance-specific server configuration (using config files)
+	* Running a server basically works (Including logging)! Yay!
+* Advanced features
+	* Hosting workshop collections
+	* Copying and controlling instances over the network
+	* Sourcemod installation, configuration and plugin management (Please report outdated / missing plugins)
 
 
 
@@ -44,7 +50,6 @@ The emphasis is on **MULTI**
 Additional ideas:
 
 * While the _MULTI_ features are the highlight, managing a single server for yourself should be just as easy.
-* ~Sourcemod plugin management~
 * Game configuration upon launch with environment variables. Possible features:
 	- Mapcycle generator (as `MAPS` variable)
 	- automatic team assignment (as `TEAM_T` and `TEAM_CT` variable)
@@ -54,17 +59,15 @@ Additional ideas:
 
 ## Requirements
 
-These scripts run in `bash` in _GNU/Linux_, so it expects usual commands to be available. These include `awk sed readlink wget tar git`, of which all are installed by default in Ubuntu Server 16.04
+These scripts run in `bash` in _Linux_ or _WSL2_ for Windows, and require several typical and some less common utilities installed. Also note that SteamCMD and your game server are 32-bit applications, so you'll have to install the 32-bit support libraries for your system, as described on [the SteamCMD Wiki page](https://developer.valvesoftware.com/wiki/SteamCMD#Linux).
 
-Also remember that SteamCMD and your game server are 32-bit applications, so you'll have to install the respective 32-bit support libraries! ([see also here](https://developer.valvesoftware.com/wiki/SteamCMD#Linux), on Ubuntu/Debian 64 Bit try: `sudo apt install lib32gcc1 lib32stdc++6`)
+```
+sudo apt install lib32gcc-s1 lib32stdc++6 jq unzip inotify-tools expect
+```
 
-Additional dependencies are:
+If you run a different Linux distribution, the commands and package names may differ. If you need to install additional applications, the script will tell you which commands are unavailable.
 
-* _tmux_, version 2.1+, see https://tmux.github.io/ (Installed by default in Ubuntu Server 16.04)
-* _inotifywait_, found in the `inotify-tools` package for Ubuntu, used by the server control to efficiently wait for file changes
-* _unbuffer_, to make update and server output and logging smoother (try `sudo apt install expect`)
-
-Of course, you require a Steam account with the game owned to create a CS:GO dedicated server. If you wish anybody to be able to connect to your server, get your Gameserver auth tokens [here](http://steamcommunity.com/dev/managegameservers) (for CS:GO, use appid 730).
+Also, you need a Steam account that owns the game to create a CS:GO dedicated server. Follow the instructions on the first launch of your instance to register your server; otherwise, players from the internet won't be able to connect.
 
 
 
@@ -77,9 +80,7 @@ The main configuration file will be placed in `~/msm.d`. It will set up all the 
 * **INSTALL_DIR** - The directory of the base installation. In **ADMIN**'s control.
 * **DEFAULT\_INSTANCE** - The instance to work on if no specific is selected
 
-The server settings themselves are instance-specific and can be configured in `$INSTANCE_DIR/msm.d/cfg/server.conf`. Most importantly, you should check and set the `GSLT`, `IP` and `PORT` variables for every new instance.
-
-**TO BE IMPLEMENTED:** Support for workshop maps, GOTV Settings have to be tested/refined.
+The server settings themselves are instance-specific and can be configured in `~/msm.d/csgo/cfg/inst/$INSTANCE/server.conf`. Most importantly, you should check and set the `GSLT`, `IP` and `PORT` variables for every new instance.
 
 
 
@@ -90,9 +91,7 @@ The server settings themselves are instance-specific and can be configured in `$
 
 1. (Optional, if you want to use installation sharing) Create a separate _admin_ user (__NOT root__, usually called _steam_) that controls SteamCMD and the base installation. You can, of course, be your own admin.
 2. Use `git clone https://github.com/dasisdormax/csgo-multiserver.git` to clone this repository to whatever place you like (preferably within the admin's home directory ~admin). Make sure this directory and all files in it are readable to all users who will use this script.
-3. For easier invocation of the main script (just by typing `csgo-server` in your terminal), do one of the following:
-    * `ln -s /home/admin/csgo-multiserver/csgo-server /usr/bin/csgo-server` (create a symlink)
-    * add that place to your `$PATH` environment variable
+3. For easier invocation of the main script (just by typing `csgo-server` in your terminal), create a symlink with the following command: `ln -s /path/to/csgo-multiserver/msm /usr/local/bin/csgo-server`
 4. As the admin user (__NOT root__), try `csgo-server setup`. This will guide you through creating the initial configuration.
 5. Install updates or the server itself as the admin user with `csgo-server update` (possibly automated by cron)
  
@@ -113,13 +112,13 @@ It is, though, not required to create a separate instance if you do not intend t
 * `csgo-server @... ( start | stop | restart )` to start/stop/restart the given server instance. The server will run in the background in a separate tmux environment. Please note that the selected _admin_ can stop the server to perform updates without nasty effects.
 * `csgo-server @... exec ...` to execute some command in the server's console
 * `csgo-server @... console` to access the in-game console (= attach to the tmux environment) to manually enter commands. You can return to your original shell (detach) by typing CTRL-D, a frozen server can be killed using CTRL-K.
-* `csgo-server usage` will display detailed usage information
+* `csgo-server help`
 
 
 
 
 ## License
 
-Apache License 2.0. I chose it because I specifically want to allow others to build services based on this script. However, I would still appreciate if improvements and fixes could make it back here.
+Apache License 2.0. I chose it because I specifically want to allow others to build services based on this script. Of course, I would still appreciate if improvements and fixes could make it back here.
 
 __Be aware that the original csgo-server-launcher by crazy is licensed under the LGPLv3__, which still applies to earlier states of this repository. The license change has been marked with the tags __lgpl-until-here__ and __apache2-from-here__. Since the license change, crazy's code has been fully replaced by own code.
