@@ -306,7 +306,7 @@ Core.Setup::setupAsAdmin () {
 	Core.BaseInstallation::applyPermissions
 
 	# Create Config and make it readable
-	MSM_ADDONS="TokenHelper"
+	MSM_ADDONS=""
 	Core.Setup::writeConfig && {
 		log <<< ""
 		success <<-EOF

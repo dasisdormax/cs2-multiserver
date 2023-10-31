@@ -64,7 +64,7 @@ App::buildLaunchCommand () {
 
 	######## GENERATE LAUNCH COMMAND ########
 	LAUNCH_ARGS=(
-		-game cs2
+		-dedicated
 		-console
 		$USE_RCON
 		-tickrate $TICKRATE
@@ -95,8 +95,8 @@ App::buildLaunchCommand () {
 		${APIKEY:+-authkey $APIKEY}
 	)
 
-	LAUNCH_DIR="$INSTANCE_DIR"
-	LAUNCH_CMD="$(quote "./srcds_run" "${LAUNCH_ARGS[@]}")"
+	LAUNCH_DIR="$INSTANCE_DIR/game/bin/linuxsteamrt64"
+	LAUNCH_CMD="$(quote "./cs2" "${LAUNCH_ARGS[@]}")"
 }
 
 

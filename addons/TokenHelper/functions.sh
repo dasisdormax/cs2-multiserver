@@ -70,11 +70,12 @@ TokenHelper::handle () {
 
 			    **$TH_CONFIG**
 		EOT
-		return 1
+		return
 	}
 	which jq >/dev/null 2>&1 || {
 		fatal <<< "The program **jq** could not be found on your system!"
 		return
 	}
 	TokenHelper::checkExisting || TokenHelper::getToken
+	true
 }

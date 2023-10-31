@@ -59,6 +59,11 @@ App::installSteamCMD () (
 	log <<< "Self-updating ..."
 	log-cmd ./steamcmd.sh +quit
 	log <<< ""
+
+	log <<< "Linking Steam client libraries ..."
+	mkdir -p "$HOME/.steam/sdk64"
+	ln -s "$HOME/Steam/steamcmd/linux64/steamclient.so" "$HOME/.steam/sdk64/steamclient.so" >&3 2>&1
+
 	success <<< "SteamCMD installed successfully!"
 )
 

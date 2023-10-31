@@ -97,14 +97,15 @@ App::generateServerConfig () {
 		echo '}}}'
 	}
 
-	local WORKSHOP_SUBSCRIBED="$INSTANCE_DIR/cs2/subscribed_file_ids.txt"
-	local WORKSHOP_RESULT="$INSTANCE_DIR/cs2/.workshop_result.txt"
-	local MAPCYCLE_TXT="$INSTANCE_DIR/cs2/mapcycle.txt"
-	local GAMEMODES_TXT="$INSTANCE_DIR/cs2/gamemodes_server.txt"
-	local GAMEMODES_ORIG_TXT="$INSTANCE_DIR/cs2/gamemodes_server_orig.txt"
-	local AUTOEXEC_CFG="$INSTANCE_DIR/cs2/cfg/autoexec.cfg"
-	local SERVER_CFG="$INSTANCE_DIR/cs2/cfg/server.cfg"
-	local LAST_CFG="$INSTANCE_DIR/cs2/cfg/server_last.cfg"
+	local CSGO_DIR="$INSTANCE_DIR/game/csgo"
+	local WORKSHOP_SUBSCRIBED="$CSGO_DIR/subscribed_file_ids.txt"
+	local WORKSHOP_RESULT="$CSGO_DIR/.workshop_result.txt"
+	local MAPCYCLE_TXT="$CSGO_DIR/mapcycle.txt"
+	local GAMEMODES_TXT="$CSGO_DIR/gamemodes_server.txt"
+	local GAMEMODES_ORIG_TXT="$CSGO_DIR/gamemodes_server_orig.txt"
+	local AUTOEXEC_CFG="$CSGO_DIR/cfg/autoexec.cfg"
+	local SERVER_CFG="$CSGO_DIR/cfg/server.cfg"
+	local LAST_CFG="$CSGO_DIR/cfg/server_last.cfg"
 	local GTN
 	local GMN
 
