@@ -14,7 +14,7 @@
 App::isUpdaterInstalled () [[ -x $HOME/Steam/steamcmd/steamcmd.sh ]]
 
 
-App::installUpdater () (
+App::installSteamCMD () (
 
 	# Skip installation if SteamCMD is already installed
 	App::isUpdaterInstalled && return
@@ -57,14 +57,58 @@ App::installUpdater () (
 	[[ -x steamcmd.sh ]] || error <<< "SteamCMD installation failed!" || return
 
 	log <<< "Self-updating ..."
-	unbuffer ./steamcmd.sh +quit | log;
+	log-cmd ./steamcmd.sh +quit
 	log <<< ""
 	success <<< "SteamCMD installed successfully!"
 )
 
 
+App::installUpdater () {
+
+	App::installSteamCMD || return
+
+	# Once SteamCMD is installed, get the username and perform a first login
+	[[ $STEAM_USERNAME ]] && return
+	
+	out <<-EOF
+		
+		To install and update the CS2 game server, you need to log in to your
+		Steam account.
+	EOF
+
+	local SUCCESS=
+	until [[ $SUCCESS ]]; do
+		out <<-EOF
+
+			Please enter your Steam account's username (the one you log in with, not
+			your display name).
+
+		EOF
+		read -p "> Your steam username: " -r STEAM_USERNAME
+		[[ $STEAM_USERNAME ]] || continue
+		out <<-EOF
+
+			We will now try to log you in with that username. Steam will probably ask
+			you for your password and Steam Guard code.
+
+		EOF
+
+		local STEAMCMD_SCRIPT="$(mktemp)"
+		cat <<-EOF > "$STEAMCMD_SCRIPT"
+			login $STEAM_USERNAME
+			quit
+		EOF
+		log-cmd "$HOME/Steam/steamcmd/steamcmd.sh" +runscript "$STEAMCMD_SCRIPT"
+		log <<< ""
+		grep "\"$STEAM_USERNAME\"" "$HOME/Steam/config/config.vdf" >/dev/null 2>&1 && SUCCESS=1
+	done
+
+	success <<< "Steam login successful!"
+}
+
+
 App::printAdditionalConfig () {
-	true
+	echo "STEAM_USERNAME=$STEAM_USERNAME"
 }
 
 
@@ -76,7 +120,7 @@ App::printAdditionalConfig () {
 App::isUpToDate () {
 
 	# variables
-	local APPMANIFEST="$INSTALL_DIR/steamapps/appmanifest_740.acf"
+	local APPMANIFEST="$INSTALL_DIR/steamapps/appmanifest_730.acf"
 
 	# If game is not installed yet, skip checking
 	[[ -e $APPMANIFEST ]] || return 2
@@ -87,20 +131,20 @@ App::isUpToDate () {
 	local STEAMCMD_SCRIPT="$TMPDIR/steamcmd-script"
 	local STEAMCMD_OUT="$TMPDIR/steamcmd-out"
 	cat <<-EOF > "$STEAMCMD_SCRIPT"
-		login anonymous
+		login $STEAM_USERNAME
 		app_info_update 1
-		app_info_print 740
+		app_info_print 730
 		quit
 	EOF
 
 	rm "$STEAMCMD_OUT" 2>/dev/null
 	# Get current build id through SteamCMD
-	unbuffer "$HOME/Steam/steamcmd/steamcmd.sh" +runscript "$STEAMCMD_SCRIPT" | MSM_LOGFILE="$STEAMCMD_OUT" log >&3
+	MSM_LOGFILE="$STEAMCMD_OUT" log-cmd "$HOME/Steam/steamcmd/steamcmd.sh" +runscript "$STEAMCMD_SCRIPT" >&3
 
 	local oldbuildid=$(cat "$APPMANIFEST" | grep "buildid" | awk '{ print $2 }')
 	local newbuildid=$(
 			cat "$STEAMCMD_OUT" |
-			sed -n "/^\"740\"$/        ,/^}/     p" |
+			sed -n "/^\"730\"$/        ,/^}/     p" |
 			sed -n '/^\t\t"branches"/,/^\t\t}/   p' |
 			sed -n '/^\t\t\t"public"/,/^\t\t\t}/ p' |
 			grep "buildid" | awk '{ print $2 }'
@@ -127,8 +171,8 @@ App::performUpdate () (
 	MSM_LOGFILE="$LOGDIR/$(timestamp)-$ACTION.log"
 	cat <<-EOF > "$STEAMCMD_SCRIPT"
 		force_install_dir "$INSTALL_DIR"
-		login anonymous
-		app_update 740 $( [[ $ACTION == repair ]] && echo "validate" )
+		login $STEAM_USERNAME
+		app_update 730 $( [[ $ACTION == repair ]] && echo "validate" )
 		quit
 	EOF
 
@@ -145,12 +189,10 @@ App::performUpdate () (
 
 		EOF
 
-		{
-			unbuffer "$HOME/Steam/steamcmd/steamcmd.sh" +runscript "$STEAMCMD_SCRIPT"
-			echo; # An additional newline, as SteamCMD is weird
-		} | log
+		log-cmd "$HOME/Steam/steamcmd/steamcmd.sh" +runscript "$STEAMCMD_SCRIPT"
+		log <<< ""
 
-		egrep "Success! App '740'.*(fully installed|up to date)" \
+		egrep "Success! App '730'.*(fully installed|up to date)" \
 		      "$MSM_LOGFILE" > /dev/null                   && local code=0
 
 	done

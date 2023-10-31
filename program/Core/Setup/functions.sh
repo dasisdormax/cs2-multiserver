@@ -127,7 +127,7 @@ Core.Setup::importFrom () {
 			to import from, or that configuration is not accessible. You may, though, switch
 			to that user and fix these problems.
 
-			You will have to confirm switching users with your sudo password. (CTRL-C to cancel)
+			You may need to confirm switching users with your sudo password. (CTRL-C to cancel)
 
 		EOF
 

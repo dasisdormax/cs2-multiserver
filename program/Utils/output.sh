@@ -81,6 +81,19 @@ bold () { perl -0777 -pe 's/\*\*(.*?)\*\*/\*\*\x1b[1m$1\x1b[22m\*\*/gs'; }
 
 
 
+########################### LOGGING COMMAND WRAPPERS ###########################
+
+log-cmd () {
+	[[ $MSM_LOGFILE ]] || {
+		$@
+		return
+	}
+	script -c "$(quote $@)" -a "$MSM_LOGFILE"
+}
+
+
+
+
 ############################### OUTPUT FUNCTIONS ###############################
 
 fatal () {
