@@ -19,8 +19,6 @@ Core.BaseInstallation::registerCommands () {
 Core.BaseInstallation::applyPermissions() {
 	App::applyInstancePermissions 2>/dev/null
 
-	chmod -R a+rX "$INSTALL_DIR"
-
 	chmod -R o-rx "$TMPDIR"
 	chmod -R o-rx "$LOGDIR"
 }
@@ -41,8 +39,6 @@ Core.BaseInstallation::create () (
 
 	Core.BaseInstallation::isExisting && return
 
-	umask o+rx # make sure that other users can 'fork' this base installation
-
 	Core.Instance::isValidDir || {
 		warning <<-EOF
 			The directory **$INSTALL_DIR** is non-empty, creating a base
@@ -59,9 +55,6 @@ Core.BaseInstallation::create () (
 		fatal <<< "No permission to create or write the directory **$INSTALL_DIR**!"
 		return
 	}
-
-	# Make existing files readable for other users
-	chmod -R +rX "$INSTALL_DIR"
 
 	# Delete old configuration
 	rm -rf "$INSTALL_DIR/msm.d" 2>/dev/null

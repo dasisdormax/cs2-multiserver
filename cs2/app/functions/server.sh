@@ -41,7 +41,7 @@ App::buildLaunchCommand () {
 	.conf "$APP/cfg/$INSTANCE_SUFFIX/gotv.conf"
 
 	######## Check GSLT ########
-	::hookable App::validateGSLT || return
+	# ::hookable App::validateGSLT || return
 
 	######## PARSE MAPS AND MAPCYCLE ########
 

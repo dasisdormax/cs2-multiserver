@@ -66,7 +66,7 @@ Core.Server::requestStart () {
 			#! /bin/bash
 			$(declare -f timestamp)
 			cd "$LAUNCH_DIR"
-			unbuffer -p $LAUNCH_CMD | tee "$LOGDIR/\$(timestamp)-server.log"
+			script -c $LAUNCH_CMD "$LOGDIR/\$(timestamp)-server.log"
 			echo \$? > "$TMPDIR/server.exit-code"
 		EOF
 

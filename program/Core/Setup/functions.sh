@@ -110,59 +110,6 @@ Core.Setup::printConfig () {
 
 
 
-################################# SETUP HELPERS #################################
-
-Core.Setup::importFrom () {
-	local IMPORT_FROM=$1
-	out <<< ""
-	out <<< "Trying to import the configuration of user **$IMPORT_FROM** ..."
-
-	# Try importing that user's configuration
-	Core.Setup::loadConfigOf $IMPORT_FROM
-	local CODE=$?
-	# If the config file does not exist, try switching to that user
-	if (( CODE == 127 )); then
-		warning <<-EOF
-			Import from user **$IMPORT_FROM** failed. That user either has no configuration
-			to import from, or that configuration is not accessible. You may, though, switch
-			to that user and fix these problems.
-
-			You may need to confirm switching users with your sudo password. (CTRL-C to cancel)
-
-		EOF
-
-		sudo -iu $IMPORT_FROM \
-			MSM_LOGFILE="$MSM_LOGFILE" MSM_DEBUG=$MSM_DEBUG __ADMIN__=$ADMIN \
-			"$THIS_COMMAND" setup ||
-		{
-			out <<< "Cancelled the import from user $IMPORT_FROM ..."
-			return 1
-		}
-
-		# Try importing again with those changes made
-		Core.Setup::loadConfigOf $IMPORT_FROM
-		CODE=$?
-	fi
-
-	(( CODE )) && error <<-EOF && return $CODE
-			The configuration of user $IMPORT_FROM contains errors!
-		EOF
-
-	if [[ $ADMIN != $IMPORT_FROM ]]; then
-		info <<-EOF
-			The configuration of user $IMPORT_FROM refers to user $ADMIN.
-			We will now try to import that user's configuration instead ...
-		EOF
-		Core.Setup::importFrom $ADMIN;
-		return
-	fi
-
-	Core.Setup::writeConfig
-}
-
-
-
-
 ################################# INITIAL SETUP #################################
 
 Core.Setup::beginSetup () {
@@ -190,9 +137,6 @@ Core.Setup::beginSetup () {
 
 		    Make sure to backup any important data in that location.
 
-		>>  For multi-user setups, this script, located at
-		        **$THIS_SCRIPT**
-		    must be readable for all users.
 	EOF
 
 	promptY || return
@@ -203,53 +147,8 @@ Core.Setup::beginSetup () {
 		return
 	}
 
-	# Ask the user if they wish to import a configuration
-	ADMIN=${ADMIN-$__ADMIN__}
-	if [[ ! $ADMIN ]]; then
-		log <<-EOF
-
-			Importing configurations
-			========================
-		EOF
-		fmt -w67 <<-EOF | indent
-
-			Instead of creating a new configuration, you may also import the settings
-			from a different user on this system.  This allows you to use that user's
-			game server installation as a base for your own instances, without having
-			to download the server files again.
-
-			If you wish to import the settings from another user, enter their name
-			below. Otherwise, hit enter to create your own configuration.
-		EOF
-	fi
-
-	local SUCCESS=
-	until [[ $SUCCESS ]]; do
-		if [[ ! $ADMIN ]]; then
-			echo
-			echo "Please enter the user to import the configuration from.  Leave empty"
-			echo "to skip importing configurations, press CTRL-C to exit."
-			echo
-			read -p "> Import configuration from? " -r ADMIN
-
-			if [[ $ADMIN ]]; then
-				debug <<< "Selected to import from user **$ADMIN**."
-			else
-				ADMIN=$USER
-				debug <<< "Skipping import and starting admin setup."
-			fi
-		fi
-
-		[[ $ADMIN == $USER ]] && { Core.Setup::setupAsAdmin; return; }
-
-		if Core.Setup::importFrom $ADMIN; then
-			success <<< "The configuration of user **$ADMIN** has been imported successfully!"
-			local SUCCESS=1
-		else
-			warning <<< "Import failed! Please specify a different user."
-			ADMIN=
-		fi
-	done
+	ADMIN=$USER
+	Core.Setup::setupAsAdmin
 
 	# Succeeds, if we have a valid config at the end
 	Core.Setup::loadConfig
@@ -286,9 +185,7 @@ Core.Setup::setupAsAdmin () {
 
 			Now, please select the **base installation directory**.  This is the
 			directory the server will be downloaded to, make sure that there is
-			plenty of free space on the disk.  Be aware that this directory will
-			be made **public readable**, so other users on the system can create
-			server instances based on it.
+			plenty of free space on the disk.
 
 		EOF
 
