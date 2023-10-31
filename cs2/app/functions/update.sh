@@ -144,7 +144,8 @@ App::isUpToDate () {
 	local oldbuildid=$(cat "$APPMANIFEST" | grep "buildid" | awk '{ print $2 }')
 	local newbuildid=$(
 			cat "$STEAMCMD_OUT" |
-			sed -n "/^\"730\"$/        ,/^}/     p" |
+			sed 's/\r$//' |
+			sed -n '/^"730"$/        ,/^}/       p' |
 			sed -n '/^\t\t"branches"/,/^\t\t}/   p' |
 			sed -n '/^\t\t\t"public"/,/^\t\t\t}/ p' |
 			grep "buildid" | awk '{ print $2 }'

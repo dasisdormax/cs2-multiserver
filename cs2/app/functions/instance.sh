@@ -14,27 +14,26 @@ App::isRunnableInstance () [[ -x $INSTANCE_DIR/$SERVER_EXEC ]]
 
 # files/directories to copy fully 
 App::instanceCopiedFiles () { cat <<-EOF ; }
-	cs2/addons
-	cs2/cfg
-	cs2/models
-	cs2/sound
+	game/csgo/addons
+	game/csgo/cfg
+	game/csgo/models
+	game/csgo/sound
 EOF
 
 
 # directories, in which the user can put own files in addition to the provided ones
 App::instanceMixedDirs () { cat <<-EOF ; }
-	cs2/maps
-	cs2/maps/cfg
-	cs2/maps/soundcache
-	cs2/logs
-	cs2/resource/overviews
+	game/csgo/maps
+	game/csgo/maps/cfg
+	game/csgo/maps/soundcache
+	game/csgo/logs
+	game/csgo/resource/overviews
 EOF
 
 
 # files/directories which are not shared between the base installation and the instances
 App::instanceIgnoredFiles () { cat <<-EOF ; }
-	bin/libgcc_s.so.1
-	cs2/addons
+	game/csgo/addons
 EOF
 
 
@@ -42,9 +41,6 @@ App::finalizeInstance () (
 	# copy presets from app to user config directory
 	mkdir -p "$CFG_DIR/presets"
 	cp -n "$APP_DIR"/presets/* "$CFG_DIR/presets"
-
-	# create cs2 directory
-	mkdir -p $INSTANCE_DIR/cs2
 )
 
 
@@ -53,8 +49,8 @@ App::applyInstancePermissions () {
 	# (such as passwords, IP addresses, etc)
 	
 	chmod -R o-r "$INSTANCE_DIR/msm.d/cfg"
-	chmod o-r "$INSTANCE_DIR/cs2/cfg/autoexec.cfg"
-	chmod o-r "$INSTANCE_DIR/cs2/cfg/server.cfg"
+	chmod o-r "$INSTANCE_DIR/game/csgo/cfg/autoexec.cfg"
+	chmod o-r "$INSTANCE_DIR/game/csgo/cfg/server.cfg"
 	true
 } 2>/dev/null
 
