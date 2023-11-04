@@ -57,13 +57,14 @@ Core.Instance::isValidDir () {
 # does all the necessary preparations to run and manage an instance that was
 # created by a previous MSM version
 Core.Instance::migrate () {
-	local OLDINST_DIR="$HOME/$APP@$INSTANCE"
+	local OLDINST_DIR="$USER_DIR/$APP/$PREV_SUFFIX"
 
-	# links an old instance to the new location
+	# moves an old instance to the new location
 	if ! Core.Instance::isInstance; then
 		if [[ $INSTANCE ]] && INSTANCE_DIR="$OLDINST_DIR" Core.Instance::isInstance; then
 			mkdir -p "$(dirname "$INSTANCE_DIR")"
-			ln -s "$OLDINST_DIR" "$INSTANCE_DIR" || return
+			mv "$INSTANCE_DIR" "$USER_DIR/$APP/backup-$(timestamp)-$INSTANCE" 2>/dev/null
+			mv "$OLDINST_DIR" "$INSTANCE_DIR" || return
 		else
 			return
 		fi
@@ -74,12 +75,12 @@ Core.Instance::migrate () {
 	# move logs to the new directory
 	[[ -d $LOGDIR ]] || {
 		mkdir -p -m o-rwx "$LOGDIR"
-		mv "$INSTANCE_DIR"/msm.d/log/* "$LOGDIR" 2>/dev/null
+		mv "$USER_DIR/$APP/log/$PREV_SUFFIX/"* "$LOGDIR" 2>/dev/null
 	}
 	# copy configs to the new directory
 	[[ -d $INSTCFGDIR ]] || {
 		mkdir -p -m o-rwx "$INSTCFGDIR"
-		cp -r "$INSTANCE_DIR"/msm.d/cfg/* "$INSTCFGDIR" 2>/dev/null
+		cp -r "$CFG_DIR/$PREV_SUFFIX/"* "$INSTCFGDIR" 2>/dev/null
 	}
 	true
 }
@@ -88,7 +89,8 @@ Core.Instance::migrate () {
 # update instance-related variables
 Core.Instance::select () {
 	if [[ $INSTANCE ]]; then
-		INSTANCE_SUFFIX="inst/$INSTANCE"
+		PREV_SUFFIX="inst/$INSTANCE"
+		INSTANCE_SUFFIX="inst-$INSTANCE"
 		INSTANCE_DIR="$USER_DIR/$APP/$INSTANCE_SUFFIX"
 		INSTANCE_TEXT="Instance @$INSTANCE"
 	else

@@ -25,20 +25,20 @@ If you are upgrading from [csgo-multiserver](https://github.com/dasisdormax/csgo
 While the CS:GO version worked quite reliably, CS2 support was not yet tested much. If you run into trouble or have a suggestion for extra features, feel free to open an issue or fork and work on *cs2-multiserver* yourself.
 
 
-### Currently working features
+### Notable features
 
 * The basics
 	* SteamCMD and Game Installation, checking for and performing updates
 	* CS2 Server instance creation
 	* Instance-specific server configuration (using config files)
 	* Running a server basically works (Including logging)! Yay!
-* Advanced features (Experimental)
+* Advanced features (Untested with CS2)
 	* Hosting workshop collections
 	* Copying and controlling instances over the network
 	* Sourcemod installation, configuration and plugin management (Please report outdated / missing plugins)
 
 
-### The vision
+### The original vision
 
 The emphasis is on **MULTI**
 
@@ -52,7 +52,7 @@ While the _MULTI_ features are the highlight, managing a single server for yours
 
 ## Getting Started
 
-#### Prerequisites
+### Prerequisites
 
 These scripts run in `bash` in _Linux_ or _WSL2_ for Windows, and require several typical and some less common utilities installed. Also note that SteamCMD is a 32-bit application, so you'll have to install the 32-bit support libraries for your system, as described on [the SteamCMD Wiki page](https://developer.valvesoftware.com/wiki/SteamCMD#Linux). You will need at least 60 GB of disk space.
 
@@ -86,7 +86,7 @@ Create your own instance (a fork of the base installation) named _test01_ using 
 
 ### Configuration and Environment Variables
 
-You can set most server configuration options by opening `~/msm.d/cs2/cfg/.../server.conf` with your text editor of choice. Most importantly, you need to set a separate `PORT` for every new instance (recommended: 27015, 27115, 27215, ...). You can also set some options on the command line, e.g. `MAPS='de_overpass de_mirage de_nuke' cs2-server @lan01 start`.
+You can set most server configuration options by opening `~/msm.d/cs2/cfg/.../server.conf` with your text editor of choice. Most importantly, you need to set a separate `PORT` for every new instance (recommended: 27015, 27115, 27215, ...). You can also set some options on the command line, e.g. `MAP='de_nuke' cs2-server @lan01 start`.
 
 
 ### Usage, when fully set up

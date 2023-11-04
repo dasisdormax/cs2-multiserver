@@ -98,7 +98,7 @@ while [[ $STATE != "STOPPED" ]]; do
 
 		( LAUNCHING )
 			info <<< "Launching $APP server ..."
-			rm "$TMPDIR/server.exit-code"
+			rm -f "$TMPDIR/server.exit-code"
 			Core.Wrapper::launchServer "$@"
 			STATE="RUNNING"
 			;;

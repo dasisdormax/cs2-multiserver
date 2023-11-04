@@ -66,7 +66,7 @@ Core.Server::requestStart () {
 			#! /bin/bash
 			$(declare -f timestamp)
 			cd "$LAUNCH_DIR"
-			script -c $LAUNCH_CMD "$LOGDIR/\$(timestamp)-server.log"
+			script -c '$(quote $LAUNCH_CMD)' "$LOGDIR/\$(timestamp)-server.log"
 			echo \$? > "$TMPDIR/server.exit-code"
 		EOF
 
@@ -75,7 +75,7 @@ Core.Server::requestStart () {
 			APP="$APP"
 			THIS_DIR="$THIS_DIR"
 			INSTANCE="$INSTANCE"
-			MSM_LOGFILE="$INSTANCE_DIR/msm.d/log/$(timestamp)-controller.log"
+			MSM_LOGFILE="$LOGDIR/$(timestamp)-controller.log"
 			. "\$THIS_DIR/program/server-control.sh" && main
 		EOF
 
