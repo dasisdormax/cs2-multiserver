@@ -116,6 +116,23 @@ error () {
 	false
 } >&2
 
+danger () {
+	if [[ ${!1} == 1 ]]; then
+		warning
+		info <<< "As $1 is set, this script continues anyway ..."
+		return
+	fi
+	(
+		cat
+		cat <<-EOF
+
+			If you know what you are doing and want to continue anyway,
+				export $1=1
+			and try again.
+		EOF
+	) | fatal
+}
+
 warning () {
 	printf "\x1b[33m"
 

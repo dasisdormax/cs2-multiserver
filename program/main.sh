@@ -33,6 +33,19 @@ EOF
 
 
 
+############################### CHECK CURRENT USER ###############################
+
+if (( $EUID == 0 )); then
+	danger MSM_I_KNOW_WHAT_I_AM_DOING_ALLOW_ROOT <<-EOF || return 
+		You are running $THIS_BASENAME as root. This is unsupported and can 
+		cause server malfunctions and security issues. Please consider
+		using a regular user instead of root.
+	EOF
+fi
+
+
+
+
 ############################### CHECK DEPENDENCIES ###############################
 
 # Check required programs
