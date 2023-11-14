@@ -112,6 +112,7 @@ App::installUpdater () {
 		log-cmd "$HOME/Steam/steamcmd/steamcmd.sh" +runscript "$STEAMCMD_SCRIPT"
 		log <<< ""
 		local steamcfg="$HOME/Steam/config/config.vdf"
+		[[ -r $steamcfg ]] || steamcfg="$HOME/.steam/steam/config/config.vdf"
 		[[ -r $steamcfg ]] || steamcfg="$HOME/.steam/config/config.vdf"
 		grep "\"$STEAM_USERNAME\"" "$steamcfg" >/dev/null 2>&1 && SUCCESS=1
 	done
