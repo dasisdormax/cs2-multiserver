@@ -62,7 +62,13 @@ App::installSteamCMD () (
 
 	log <<< "Linking Steam client libraries ..."
 	mkdir -p "$HOME/.steam/sdk64"
-	ln -s "$HOME/Steam/steamcmd/linux64/steamclient.so" "$HOME/.steam/sdk64/steamclient.so" >&3 2>&1
+	local dst="$HOME/.steam/sdk64/steamclient.so"
+	if [[ ! -r $dst ]]; then
+		rm -f "$dst"
+		local src="$HOME/Steam/steamcmd/linux64/steamclient.so"
+		[[ -e $src ]] || src="$HOME/.steam/steamcmd/linux64/steamclient.so"
+		ln -s "$src" "$dst" >&3 2>&1
+	fi
 
 	success <<< "SteamCMD installed successfully!"
 )
@@ -105,7 +111,9 @@ App::installUpdater () {
 		EOF
 		log-cmd "$HOME/Steam/steamcmd/steamcmd.sh" +runscript "$STEAMCMD_SCRIPT"
 		log <<< ""
-		grep "\"$STEAM_USERNAME\"" "$HOME/Steam/config/config.vdf" >/dev/null 2>&1 && SUCCESS=1
+		local steamcfg="$HOME/Steam/config/config.vdf"
+		[[ -r $steamcfg ]] || steamcfg="$HOME/.steam/config/config.vdf"
+		grep "\"$STEAM_USERNAME\"" "$steamcfg" >/dev/null 2>&1 && SUCCESS=1
 	done
 
 	success <<< "Steam login successful!"
