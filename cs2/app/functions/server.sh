@@ -110,6 +110,15 @@ App::announceUpdate () {
 # Ask the server to shut down
 App::shutdownServer () {
 	tmux-send -t ":$APP-server" <<-EOF
-		exit
+		quit
 	EOF
+}
+
+App::killServer () {
+	# CS2 survives a hangup of the launching terminal, so we kill the process owning the socket directly
+	local PID=$(ss -Hulpn sport = :$PORT | grep -Eo 'pid=[0-9]+')
+	[[ $PID ]] || return
+	PID=${PID#*=}
+	debug <<< "Killing server with pid = $PID ..."
+	kill $PID
 }

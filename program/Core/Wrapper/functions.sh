@@ -76,4 +76,6 @@ Core.Wrapper::shutdownServer () {
 }
 
 
-Core.Wrapper::killServer () { tmux kill-window -t ":$APP-server"; } 2>/dev/null
+Core.Wrapper::killServer () { 
+	try App::killServer || tmux kill-window -t ":$APP-server"
+} 2>/dev/null

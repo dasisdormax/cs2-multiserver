@@ -52,6 +52,7 @@ Core.Server::requestStart () {
 		EOF
 
 	log <<< "Starting $INSTANCE_TEXT ..."
+	rm -f "$TMPDIR/stop"
 
 	# Load instance configuration
 	::hookable App::buildLaunchCommand || return
@@ -70,11 +71,13 @@ Core.Server::requestStart () {
 			echo \$? > "$TMPDIR/server.exit-code"
 		EOF
 
+	# TODO: App-specific variables to pass to server control, instead of port
 	cat > "$TMPDIR/server-control.sh" <<-EOF
 			#! /bin/bash
 			APP="$APP"
 			THIS_DIR="$THIS_DIR"
 			INSTANCE="$INSTANCE"
+			PORT="$PORT"
 			MSM_LOGFILE="$LOGDIR/$(timestamp)-controller.log"
 			. "\$THIS_DIR/program/server-control.sh" && main
 		EOF
