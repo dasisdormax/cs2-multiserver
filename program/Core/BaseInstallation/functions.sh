@@ -179,6 +179,37 @@ Core.BaseInstallation::isUpToDate () {
 }
 
 
+stopAllInstances () {
+	########## Tell running instances that the update is starting soon
+
+	umask o+rx
+	local UPDATE_TIME=$(( $(date +%s) + $UPDATE_WAITTIME ))
+	echo $UPDATE_TIME > "$INSTALL_DIR/msm.d/update"
+
+	########## Stop running instances
+
+	if Core.Instance::isRunnableInstance; then
+		local isRunning=
+		local instances="$(Core.Instance::listInstances)";
+		for inst in "" $instances; do
+			[[ $isRunning ]] && break
+			(
+				INSTANCE=$inst
+				Core.Instance::select
+				Core.Server::isRunning
+			) && isRunning=1
+		done
+		[[ $isRunning ]] || return
+		
+		log <<< "Waiting $UPDATE_WAITTIME seconds for running instances to stop ..."
+		while (( $(date +%s) < $UPDATE_TIME )); do 
+			sleep 1;
+		done
+		log <<< ""
+	fi
+}
+
+
 # Starts an update or repair of the base installation
 # Note: this requires $ACTION variable to be set to either 'update' or 'repair'
 Core.BaseInstallation::startUpdate () (
@@ -186,22 +217,7 @@ Core.BaseInstallation::startUpdate () (
 	log <<< ""
 	requireUpdater || return
 
-	########## Tell running instances that the update is starting soon
-
-	umask o+rx
-	local UPDATE_TIME=$(( $(date +%s) + $UPDATE_WAITTIME ))
-	echo $UPDATE_TIME > "$INSTALL_DIR/msm.d/update"
-
-	########## Wait (meanwhile, prevent exiting on Ctrl-C)
-	# TODO: Allow the user to cancel the update
-
-	if Core.Instance::isRunnableInstance; then
-		trap "" SIGINT
-		log <<< "Waiting $UPDATE_WAITTIME seconds for running instances to stop ..."
-		while (( $(date +%s) < $UPDATE_TIME )); do sleep 1; done
-		trap SIGINT
-		log <<< ""
-	fi
+	stopAllInstances
 
 	########## Done waiting, perform the update now.
 

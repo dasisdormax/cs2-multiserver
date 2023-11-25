@@ -111,9 +111,10 @@ Core.Instance::select () {
 # Also checks the instances and performs necessary migrations
 Core.Instance::listInstances () (
 	list=" "
-	for file in "$USER_DIR/$APP/inst/"* "$HOME/$APP@"*; do
+	for file in "$USER_DIR/$APP/inst-"* "$HOME/$APP@"*; do
 		[[ -e $file ]] || continue
 		INSTANCE="${file##*[/@]}"
+		INSTANCE="${INSTANCE#inst-}"
 		list-contains "$list" $INSTANCE && continue
 		Core.Instance::select
 		Core.Instance::isInstance && {
