@@ -199,10 +199,15 @@ Core.Setup::setupAsAdmin () {
 	done
 
 	# Final Steps
+	Core.Instance::select
 	App::finalizeInstance
 	Core.BaseInstallation::applyPermissions
 
 	# Create Config and make it readable
+	mkdir -p -m o-rwx "$TMPDIR" "$LOGDIR" "$INSTCFGDIR"
+	# Create the initial instance configuration files
+	cp -rn "$APP_DIR"/cfg/* "$INSTCFGDIR" 2>/dev/null
+
 	MSM_ADDONS=""
 	Core.Setup::writeConfig && {
 		log <<< ""
