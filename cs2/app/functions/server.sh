@@ -9,21 +9,6 @@
 
 
 
-App::validateGSLT () {
-	[[ $GSLT ]] && return
-	warning <<-EOF
-		No Game Server Login Token (GSLT) has been specified! This means that
-		nobody (including yourself) will be able to connect to this server from
-		the internet! Get your GSLT (AppID 730) on
-
-			  **http://steamcommunity.com/dev/managegameservers**
-
-		and insert it into your instance's **server.conf**.
-	EOF
-	promptY "Launch this server anyway?"
-}
-
-
 App::buildLaunchCommand () {
 	# Read general config
 	.file "$INSTCFGDIR/server.conf"
@@ -39,9 +24,6 @@ App::buildLaunchCommand () {
 
 	# Load GOTV settings
 	.conf "$APP/cfg/$INSTANCE_SUFFIX/gotv.conf"
-
-	######## Check GSLT ########
-	# ::hookable App::validateGSLT || return
 
 	######## PARSE MAPS AND MAPCYCLE ########
 
@@ -67,7 +49,7 @@ App::buildLaunchCommand () {
 		-dedicated
 		-console
 		$USE_RCON
-		-tickrate $TICKRATE
+		${TICKRATE:+-tickrate $TICKRATE} # Likely has no effect with CS2 tickless
 		-ip $IP
 		-port $PORT
 		${WAN_IP:++net_public_adr "'$WAN_IP'"}
@@ -82,7 +64,6 @@ App::buildLaunchCommand () {
 		${TV_ENABLE:+
 			+tv_enable 1
 			+tv_port "$TV_PORT"
-			+tv_snapshotrate "$TV_SNAPSHOTRATE"
 			+tv_maxclients "$TV_MAXCLIENTS"
 		} # GOTV Settings
 
@@ -91,8 +72,9 @@ App::buildLaunchCommand () {
 			+tv_relaypassword "$TV_RELAYPASS"
 		} # GOTV RELAY SETTINGS
 
-		${GSLT:++sv_setsteamaccount $GSLT} # Game Server Login Token, if set
 		${APIKEY:+-authkey $APIKEY}
+
+		+exec autoexec.cfg
 	)
 
 	LAUNCH_DIR="$INSTANCE_DIR/game/bin/linuxsteamrt64"

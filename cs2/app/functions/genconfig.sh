@@ -169,10 +169,6 @@ App::generateServerConfig () {
 			sv_pure "$SV_PURE"
 			sv_cheats "$SV_CHEATS"
 
-			sv_mincmdrate "$TICKRATE"
-			sv_minupdaterate "$TICKRATE"
-			sv_minrate "$(( TICKRATE * 500 ))"
-
 			exec banned_user.cfg // Read list of banned users
 		EOF
 
@@ -196,7 +192,6 @@ App::generateServerConfig () {
 			tv_title "$TV_TITLE"
 
 			tv_transmitall "$TV_TRANSMITALL"
-			tv_relaytextchat "$TV_RELAYTEXTCHAT"
 			tv_relayvoice "$TV_RELAYVOICE"
 
 			tv_delaymapchange 1
@@ -219,7 +214,7 @@ App::generateServerConfig () {
 		cat <<-EOF
 			writeid // Update banned_user.cfg
 			// You could add 'writeip' here, but banning ips is generally
-			// not effective, with most people having dynamic ip addresses
+			// not effective, with most people having dynamic ip addressesf
 		EOF
 
 		# Additional commands, may be set through the gamemode script
