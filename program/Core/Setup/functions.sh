@@ -208,7 +208,7 @@ Core.Setup::setupAsAdmin () {
 	# Create the initial instance configuration files
 	cp -rn "$APP_DIR"/cfg/* "$INSTCFGDIR" 2>/dev/null
 
-	MSM_ADDONS=" SteamAPIHelper "
+	MSM_ADDONS=""
 	Core.Setup::writeConfig && {
 		log <<< ""
 		success <<-EOF

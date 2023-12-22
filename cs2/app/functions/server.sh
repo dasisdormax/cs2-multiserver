@@ -61,15 +61,34 @@ App::buildLaunchCommand () {
 		${TICKRATE:+-tickrate $TICKRATE} # Likely has no effect with CS2 tickless
 		-ip $IP
 		-port $PORT
+
 		${WAN_IP:++net_public_adr "'$WAN_IP'"}
 
-		${SV_OCCLUDE_PLAYERS:++sv_occlude_players "$SV_OCCLUDE_PLAYERS"}
+		${APIKEY:+-authkey $APIKEY}
+		${GSLT:++sv_setsteamaccount $GSLT}
 
 		+game_type $GAMETYPE
 		+game_mode $GAMEMODE
-		+mapgroup $MAPGROUP
-		+map $MAP
+	)
 
+	if [[ $WORKSHOP_COLLECTION_ID ]]; then
+		LAUNCH_ARGS+=(
+			+map de_mirage
+			+host_workshop_collection $WORKSHOP_COLLECTION_ID
+		)
+	elif [[ $WORKSHOP_MAP_ID ]]; then
+		LAUNCH_ARGS+=(
+			+map de_mirage
+			+host_workshop_map $WORKSHOP_MAP_ID
+		)
+	else
+		LAUNCH_ARGS+=(
+			+mapgroup $MAPGROUP
+			+map $MAP
+		)
+	fi
+
+	LAUNCH_ARGS+=(
 		${TV_ENABLE:+
 			+tv_enable 1
 			+tv_port "$TV_PORT"
@@ -80,8 +99,6 @@ App::buildLaunchCommand () {
 			+tv_relay "$TV_RELAY"
 			+tv_relaypassword "$TV_RELAYPASS"
 		} # GOTV RELAY SETTINGS
-
-		${APIKEY:+-authkey $APIKEY}
 
 		+exec autoexec.cfg
 	)

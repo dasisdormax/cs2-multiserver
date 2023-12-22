@@ -172,7 +172,6 @@ App::generateServerConfig () {
 	(	disclaimer
 
 		[[ $BOT_QUOTA ]] && echo "bot_quota \"$BOT_QUOTA\""
-		[[ $SV_OCCLUDE_PLAYERS ]] && echo "sv_occlude_players \"$SV_OCCLUDE_PLAYERS\""
 		[[ $TV_DELAY ]] && echo "tv_delay \"$TV_DELAY\""
 
 		# Additional commands, may be set through the gamemode script
