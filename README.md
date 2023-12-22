@@ -31,9 +31,9 @@ While the CS:GO version worked quite reliably, CS2 support was not yet tested mu
 	* SteamCMD and Game Installation, checking for and performing updates
 	* CS2 Server instance creation
 	* Instance-specific server configuration (using config files)
+	* Hosting workshop maps and collections
 	* Running a server basically works (Including logging)! Yay!
 * Advanced features (Untested with CS2)
-	* Hosting workshop collections
 	* Copying and controlling instances over the network
 	* Sourcemod installation, configuration and plugin management (Please report outdated / missing plugins)
 

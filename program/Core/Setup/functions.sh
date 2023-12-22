@@ -126,16 +126,16 @@ Core.Setup::beginSetup () {
 
 	out <<-EOF
 		-------------------------------------------------------------------------------
-						 CS2 Multi-Mode Server Manager - Initial Setup
+		                 CS2 Multi-Mode Server Manager - Initial Setup
 		-------------------------------------------------------------------------------
 
 		It seems like this is the first time you use this script on this machine.
 		Before advancing, be aware of a few things:
 
 		>>  The configuration files will be saved in the directory:
-				**$CFG_DIR**
+		        **$CFG_DIR**
 
-			Make sure to backup any important data in that location.
+		    Make sure to backup any important data in that location.
 
 	EOF
 

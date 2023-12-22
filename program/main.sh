@@ -19,8 +19,8 @@ out <<-EOF >&3
 
 	========================================================================
 
-						  **CS2 Multi Server Manager**
-						  ----------------------------
+	                      **CS2 Multi Server Manager**
+	                      ----------------------------
 
 	  Current time:   $(date)
 	  Log file:       $MSM_LOGFILE
