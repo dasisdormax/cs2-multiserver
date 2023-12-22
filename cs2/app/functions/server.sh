@@ -9,6 +9,12 @@
 
 
 
+App::validateGSLT () {
+	[[ $GSLT ]] && return
+	debug <<< "Launching CS2 with no Game Server Login Token (GSLT) specified ..."
+}
+
+
 App::buildLaunchCommand () {
 	# Read general config
 	.file "$INSTCFGDIR/server.conf"
@@ -24,6 +30,9 @@ App::buildLaunchCommand () {
 
 	# Load GOTV settings
 	.conf "$APP/cfg/$INSTANCE_SUFFIX/gotv.conf"
+
+	######## Check GSLT ########
+	::hookable App::validateGSLT
 
 	######## PARSE MAPS AND MAPCYCLE ########
 

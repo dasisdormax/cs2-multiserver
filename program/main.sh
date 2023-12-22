@@ -19,8 +19,8 @@ out <<-EOF >&3
 
 	========================================================================
 
-	                      **CS2 Multi Server Manager**
-	                      ----------------------------
+						  **CS2 Multi Server Manager**
+						  ----------------------------
 
 	  Current time:   $(date)
 	  Log file:       $MSM_LOGFILE
@@ -49,7 +49,7 @@ fi
 ############################### CHECK DEPENDENCIES ###############################
 
 # Check required programs
-local programs="sed awk tmux wget tar readlink inotifywait"
+local programs="sed awk tmux wget tar jq readlink inotifywait"
 local program
 for program in $programs; do
 	[[ -x $(which $program) ]] ||

@@ -41,65 +41,7 @@ App::generateServerConfig () {
 		esac
 	}
 
-	workshop_mapgroup () {
-		[[ $WORKSHOP_COLLECTION_ID ]] || return 0
-		local URL
-		local DATA
-		local ID
-		local MAPNAME
-		local MAP_TRIPLE
-		which jq >/dev/null 2>&1 || {
-			fatal <<< "The program **jq** could not be found on your system!"
-			return
-		}
-		[[ $APIKEY ]] || {
-			error <<-EOF
-				Cannot host workshop maps without a Steam Web API Key. Please get
-				one at
-
-				      **http://steamcommunity.com/dev/apikey**
-
-				and insert it into your instance's **server.conf**.
-			EOF
-			exit 1
-		}
-		# Load info about collection
-		echo "Loading collection $WORKSHOP_COLLECTION_ID from Workshop ..." >&2
-		URL=https://api.steampowered.com/ISteamRemoteStorage/GetCollectionDetails/v1/
-		DATA="collectioncount=1&publishedfileids[0]=$WORKSHOP_COLLECTION_ID"
-		wget -q --post-data "$DATA" "$URL" -O "$WORKSHOP_RESULT" || {
-			error <<< "Collection not found! Make sure the ID is correct and the collection is not private!"
-			exit
-		}
-		# Parse JSON and load file details for each item in the collection
-		MAPGROUP=mg_workshop
-		cat <<-EOF 
-			"mapgroups" { "mg_workshop" {
-			"name" "mg_workshop"
-			"maps" {
-		EOF
-		MAPS=()
-		rm -f "$WORKSHOP_SUBSCRIBED"
-		URL=https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/
-		for ID in $(cat "$WORKSHOP_RESULT" | jq -r .response.collectiondetails[].children[].publishedfileid); do
-			DATA="itemcount=1&publishedfileids[0]=$ID"
-			wget -q --post-data "$DATA" "$URL" -O "$WORKSHOP_RESULT" || continue
-			FILENAME="$(cat "$WORKSHOP_RESULT" | jq -r .response.publishedfiledetails[].filename)"
-			[[ $FILENAME =~ .bsp$ ]] || continue
-			MAPNAME="${FILENAME%.bsp}"
-			MAPNAME="${MAPNAME##*/}"
-			MAP_TRIPLE="workshop/$ID/$MAPNAME"
-			MAPS+=( "$MAP_TRIPLE" )
-			echo "Adding map $MAP_TRIPLE ..." >&2
-			echo "$ID" >> "$WORKSHOP_SUBSCRIBED"
-			echo "\"$MAP_TRIPLE\" \"\""
-		done
-		echo '}}}'
-	}
-
 	local CSGO_DIR="$INSTANCE_DIR/game/csgo"
-	local WORKSHOP_SUBSCRIBED="$CSGO_DIR/subscribed_file_ids.txt"
-	local WORKSHOP_RESULT="$CSGO_DIR/.workshop_result.txt"
 	local MAPCYCLE_TXT="$CSGO_DIR/mapcycle.txt"
 	local GAMEMODES_TXT="$CSGO_DIR/gamemodes_server.txt"
 	local GAMEMODES_ORIG_TXT="$CSGO_DIR/gamemodes_server_orig.txt"
@@ -108,7 +50,6 @@ App::generateServerConfig () {
 	local LAST_CFG="$CSGO_DIR/cfg/server_last.cfg"
 	local GTN
 	local GMN
-
 
 	######## GAMEMODES ########
 	# We create our own gamemodes_server.txt
@@ -134,7 +75,7 @@ App::generateServerConfig () {
 		[[ $WORKSHOP_COLLECTION_ID ]] && echo '"mapgroupsMP" { "mg_workshop" "" }'
 		echo "}}}}"
 	) > "$GAMEMODES_TXT"
-	workshop_mapgroup >> "$GAMEMODES_TXT"
+	::hookable App::extendGamemodes || return
 	echo "}" >> "$GAMEMODES_TXT"
 
 

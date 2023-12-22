@@ -1,7 +1,7 @@
 #! /bin/bash
 ## vim: noet:sw=0:sts=0:ts=4
 
-local ADDON_NAME="Game Server Token Helper"
-local ADDON_DESCRIPTION="This addon uses the Steam Web API to automatically create Game Server Login Tokens (GSLT) for your instances"
+local ADDON_NAME="Steam API Helper"
+local ADDON_DESCRIPTION="This addon uses the Steam Web API to enable workshop support and automatic token creation"
 local ADDON_WEBSITE="https://github.com/dasisdormax/cs2-multiserver"
 local ADDON_AUTHOR="Maximilian '//chilly™//' Wende <dasisdormax@mailbox.org>"

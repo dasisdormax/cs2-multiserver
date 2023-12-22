@@ -98,7 +98,7 @@
 ALL_HOOKS=" "
 
 ::hookable () {
-	[[ $1 ]] && ::hook "before~$@" && "$@" && ::hook "after~$@"
+	[[ $1 ]] && ::hook "before~$@" && ::innerHook "$@" && ::hook "after~$@"
 }
 
 # Executes the functions registered to the given hook.
@@ -114,6 +114,14 @@ ALL_HOOKS=" "
 		${line#$1@} "$@" || return
 	done
 	return 0
+}
+
+::innerHook () {
+	if declare -f -F "$1" >/dev/null; then
+		"$@"
+		return
+	fi
+	::hook "$@"
 }
 
 # Registers a function ($2) to a named hook ($1)
