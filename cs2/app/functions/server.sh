@@ -25,7 +25,12 @@ App::buildLaunchCommand () {
 
 	# Load preset (such as gamemode, maps, ...)
 	PRESET="${PRESET-"$__PRESET__"}"
-	[[ $PRESET ]] && .file "$CFG_DIR/presets/$PRESET.conf"
+	if [[ $PRESET ]]; then
+		.file "$CFG_DIR/presets/$PRESET.conf" \
+			|| .file "$APP_DIR/presets/$PRESET.conf" \
+			|| error <<< "Preset '$PRESET' not found!" \
+			|| exit
+	fi
 	applyDefaults
 
 	# Load GOTV settings
