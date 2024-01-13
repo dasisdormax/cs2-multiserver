@@ -159,8 +159,15 @@ ALL_HOOKS=" "
 	return 1
 }
 
+export IFS=$' \t\r\n'
+
 # override command not found message
 command_not_found_handle () {
+	if [[ $1 =~ $'\r' ]]; then
+		local file="${BASH_SOURCE[1]}"
+		catwarn <<< "Warning: File '$file' contains windows line endings and might be processed incorrectly."
+		return
+	fi
 	error <<< "**$1** - command not found"
 	local mod=$(echo $1 | grep -o '^..*::')
 	if [[ $mod ]]; then
