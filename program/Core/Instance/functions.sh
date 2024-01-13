@@ -132,7 +132,7 @@ Core.Instance::listInstances () (
 # recursively symlinks all files from the base installation that do not exist yet in the instance
 # TODO: instead of checking for a donotlink file, respect App::instanceIgnoredDirs
 Core.Instance::symlinkFiles () {
-	local IGNORE=" $(App::instanceIgnoredFiles) msm.d "
+	local IGNORE=" $(echo $(App::instanceIgnoredFiles)) msm.d "
 	local pwd="$(pwd)/"
 	local dir="${pwd#"$INSTANCE_DIR/"}"
 	local BASE_DIR="$INSTALL_DIR/$dir"
