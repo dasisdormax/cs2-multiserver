@@ -18,6 +18,7 @@ App::instanceCopiedFiles () { cat <<-EOF ; }
 	game/csgo/cfg
 	game/csgo/models
 	game/csgo/sound
+	game/csgo/gameinfo.gi
 EOF
 
 
@@ -28,16 +29,23 @@ App::instanceMixedDirs () { cat <<-EOF ; }
 	game/csgo/maps/soundcache
 	game/csgo/logs
 	game/csgo/resource/overviews
+	game/bin/linuxsteamrt64
 EOF
 
 
 # files/directories which are not shared between the base installation and the instances
 App::instanceIgnoredFiles () { cat <<-EOF ; }
 	game/csgo/addons
+	game/csgo/replays
 EOF
 
 
 App::finalizeInstance () (
+	[[ $INSTANCE ]] && {
+		# Make sure each instance has its own up-to-date cs2 binary
+		rm "$INSTANCE_DIR/$SERVER_EXEC"
+		cp "$INSTALL_DIR/$SERVER_EXEC" "$INSTANCE_DIR/$SERVER_EXEC"
+	}
 	# copy presets from app to user config directory
 	mkdir -p "$CFG_DIR/presets"
 	cp -n "$APP_DIR"/presets/* "$CFG_DIR/presets"
