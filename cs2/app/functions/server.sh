@@ -66,6 +66,7 @@ App::buildLaunchCommand () {
 		${TICKRATE:+-tickrate $TICKRATE} # Likely has no effect with CS2 tickless
 		-ip $IP
 		-port $PORT
+		${MAXPLAYERS:+-maxplayers $MAXPLAYERS}
 
 		${WAN_IP:++net_public_adr "'$WAN_IP'"}
 

@@ -77,7 +77,7 @@ applyDefaults () {
 		# Strip underscores from varname
 		target=${source%__}
 		target=${target#__}
-		[[ ! ${!target} ]] && declare -g $target="${!source}"
+		[[ ! ${!target+1} ]] && declare -g $target="${!source}"
 		unset $source
 	done
 }

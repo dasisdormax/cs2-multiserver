@@ -2,7 +2,6 @@
 ## vim: noet:sw=0:sts=0:ts=4
 
 ::registerHook before~App::validateGSLT SteamAPIHelper::handleGSLT
-::registerHook App::extendGamemodes SteamAPIHelper::loadWorkshop
 
 SteamAPIHelper::vars () {
 	SAH_HOME="$USER_DIR/$APP/addons/steam-api-helper"

@@ -43,41 +43,11 @@ App::generateServerConfig () {
 
 	local CSGO_DIR="$INSTANCE_DIR/game/csgo"
 	local MAPCYCLE_TXT="$CSGO_DIR/mapcycle.txt"
-	local GAMEMODES_TXT="$CSGO_DIR/gamemodes_server.txt"
-	local GAMEMODES_ORIG_TXT="$CSGO_DIR/gamemodes_server_orig.txt"
 	local AUTOEXEC_CFG="$CSGO_DIR/cfg/autoexec.cfg"
 	local SERVER_CFG="$CSGO_DIR/cfg/server.cfg"
 	local LAST_CFG="$CSGO_DIR/cfg/server_last.cfg"
 	local GTN
 	local GMN
-
-	######## GAMEMODES ########
-	# We create our own gamemodes_server.txt
-	local MARK="// <-- DO NOT DELETE OR CHANGE THIS LINE!"
-	if [[ -r "$GAMEMODES_TXT" && "$(head -n1 "$GAMEMODES_TXT" 2>/dev/null)" != $MARK ]]; then
-		# Backup the file
-		cp -n "$GAMEMODES_TXT" "$GAMEMODES_ORIG_TXT"
-	fi
-	rm -f "$GAMEMODES_TXT"
-	(	echo "$MARK"
-		# Include original gamemodes_server.txt, including rules and mapgroups
-		cat "$GAMEMODES_ORIG_TXT" 2>/dev/null
-
-		# Calculate Gamemode names and build our entry
-		gamemodenames
-		disclaimer
-		cat <<-EOF
-			"GameModes_Server.txt"{"gameTypes"{"$GTN"{
-			  "gameModes"{"$GMN"{
-		EOF
-		[[ $MAXPLAYERS ]] && echo "\"maxplayers\" \"$MAXPLAYERS\""
-		echo "\"exec\"{\"exec\" \"server_last.cfg\"}"
-		[[ $WORKSHOP_COLLECTION_ID ]] && echo '"mapgroupsMP" { "mg_workshop" "" }'
-		echo "}}}}"
-	) > "$GAMEMODES_TXT"
-	::hookable App::extendGamemodes || return
-	echo "}" >> "$GAMEMODES_TXT"
-
 
 	######## MAPCYCLE ########
 	# The map pool (and usually its order as well) when using sourcemod
@@ -121,7 +91,7 @@ App::generateServerConfig () {
 		[[ $TV_CAMERAMAN     ]] && echo "tv_allow_camera_man_steamid \"$TV_CAMERAMAN\""
 
 		# GOTV specific settings ####
-		(( TV_ENABLE )) && cat <<-EOF
+		if (( TV_ENABLE )); then cat <<-EOF
 
 
 			// -------- GOTV --------
@@ -140,6 +110,9 @@ App::generateServerConfig () {
 
 			mapoverview_allow_client_draw 1
 		EOF
+		else
+			TV_ENABLE=
+		fi
 
 		# Additional commands, may be set through the gamemode script
 		for item in "${AUTOEXEC_CUSTOM[@]}"; do
