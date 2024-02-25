@@ -19,10 +19,6 @@ App::buildLaunchCommand () {
 	# Read general config
 	.file "$INSTCFGDIR/server.conf"
 
-	# As "old" config files immediately generate all files and
-	# the launch command, we have nothing more to do
-	[[ $LAUNCH_CMD ]] && return
-
 	# Load preset (such as gamemode, maps, ...)
 	PRESET="${PRESET-"$__PRESET__"}"
 	if [[ $PRESET ]]; then
@@ -38,6 +34,17 @@ App::buildLaunchCommand () {
 
 	######## Check GSLT ########
 	::hookable App::validateGSLT
+	
+	######## Check PORT ########
+	local PID=$(ss -Hulpn sport = :$PORT | grep -Eo 'pid=[0-9]+')
+	if [[ $PID ]]; then
+		error <<-EOF
+			Port **$PORT** is already in use.
+
+			Please specify a different PORT in **$INSTCFGDIR/server.conf**.
+		EOF
+		return
+	fi
 
 	######## PARSE MAPS AND MAPCYCLE ########
 
