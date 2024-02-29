@@ -5,6 +5,13 @@ Launch and set up **Counter-Strike 2** Dedicated Servers. (WIP)
 
 
 
+## Getting Help
+
+Please read this README-File and the FAQ at <https://github.com/dasisdormax/cs2-multiserver/wiki/FAQ>.
+
+
+
+
 ## About this project
 
 *cs2-multiserver* is an administration tool for CS2 that helps you with the setup, configuration and control of your server(s).
