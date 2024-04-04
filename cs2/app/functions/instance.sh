@@ -41,7 +41,7 @@ EOF
 
 
 App::finalizeInstance () (
-	[[ $INSTANCE_DIR -ne $INSTALL_DIR ]] && {
+	[[ "$INSTANCE_DIR" != "$INSTALL_DIR" ]] && {
 		# Make sure each instance has its own up-to-date cs2 binary
 		rm "$INSTANCE_DIR/$SERVER_EXEC"
 		cp "$INSTALL_DIR/$SERVER_EXEC" "$INSTANCE_DIR/$SERVER_EXEC"
