@@ -114,7 +114,11 @@ App::installUpdater () {
 		local steamcfg="$HOME/Steam/config/config.vdf"
 		[[ -r $steamcfg ]] || steamcfg="$HOME/.steam/steam/config/config.vdf"
 		[[ -r $steamcfg ]] || steamcfg="$HOME/.steam/config/config.vdf"
-		grep "\"$STEAM_USERNAME\"" "$steamcfg" >/dev/null 2>&1 && SUCCESS=1
+		if [[ "$STEAM_USERNAME" == "anonymous" ]]; then
+			SUCCESS=1
+		else
+			grep "\"$STEAM_USERNAME\"" "$steamcfg" >/dev/null 2>&1 && SUCCESS=1
+		fi
 	done
 
 	success <<< "Steam login successful!"
