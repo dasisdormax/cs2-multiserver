@@ -7,7 +7,7 @@ SteamAPIHelper::vars () {
 	SAH_HOME="$USER_DIR/$APP/addons/steam-api-helper"
 	SAH_CONFIG="$SAH_HOME/config.sh"
 	SAH_TOKEN_DIR="$SAH_HOME/tokens"
-	SAH_TOKEN_FILE="$SAH_TOKEN_DIR/$INSTANCE"
+	SAH_TOKEN_FILE="$SAH_TOKEN_DIR/$INSTANCE_SUFFIX"
 	[[ $APP == cs2 ]] && SAH_APPID=730
 	mkdir -p "$SAH_HOME"
 	mkdir -p "$SAH_TOKEN_DIR"
