@@ -44,10 +44,52 @@ App::generateServerConfig () {
 	local CSGO_DIR="$INSTANCE_DIR/game/csgo"
 	local MAPCYCLE_TXT="$CSGO_DIR/mapcycle.txt"
 	local AUTOEXEC_CFG="$CSGO_DIR/cfg/autoexec.cfg"
+	local GAMEMODES_SERVER="$CSGO_DIR/gamemodes_server.cfg"
 	local SERVER_CFG="$CSGO_DIR/cfg/server.cfg"
 	local LAST_CFG="$CSGO_DIR/cfg/server_last.cfg"
 	local GTN
 	local GMN
+
+	######## MAPGROUP ########
+	# Ensure a valid mapgroup is set. If no map group is selected and a map list
+	# is provided, this creates a custom mapgroup with those maps
+
+	create_mapgroup () {
+		[[ $MAPS ]] || {
+			MAPGROUP=mg_active
+			MAPS=de_dust2
+			echo "Setting active ..."
+			return 0
+		}
+		echo "Creating mapgroup mg_custom ..."
+		MAPGROUP=mg_custom
+		cat <<EOF > "$GAMEMODES_SERVER"
+// Custom maps for CS2-MSM
+"GameModes.txt"
+{
+	"gameTypes"
+    {
+    }
+	"mapgroups"
+	{
+		"mg_custom"
+		{
+			"name"					"mg_custom"
+			"displayname"			"CS2-MSM Custom maps"
+			"maps"
+			{
+EOF
+		for map in ${MAPS[@]}; do
+			echo "				\"$map\"	\"\"" >> "$GAMEMODES_SERVER"
+		done
+		cat <<EOF >> "$GAMEMODES_SERVER"
+			}
+		}
+	}
+}
+EOF
+	}
+	[[ $MAPGROUP ]] || create_mapgroup || return
 
 	######## MAPCYCLE ########
 	# The map pool (and usually its order as well) when using sourcemod
