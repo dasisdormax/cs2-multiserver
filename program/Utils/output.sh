@@ -88,7 +88,7 @@ log-cmd () {
 		$@
 		return
 	}
-	script -c "$(quote $@)" -a "$MSM_LOGFILE"
+	stdbuf -o0 -e0 $@ | tee -a "$MSM_LOGFILE"
 }
 
 

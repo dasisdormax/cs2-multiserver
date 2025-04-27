@@ -68,8 +68,10 @@ Core.Server::requestStart () {
 			$(declare -f timestamp)
 			cd "$LAUNCH_DIR"
 			SERVER_LOGFILE="$LOGDIR/\$(timestamp)-server.log"
-			tmux pipe-pane "cat > '\$SERVER_LOGFILE'"
-			$LAUNCH_CMD
+			LOG_LINK="$LOGDIR/server.log"
+			rm -f "\$LOG_LINK"
+			ln -s "\$SERVER_LOGFILE" "\$LOG_LINK"
+			stdbuf -o0 -e0 $LAUNCH_CMD 2>&1 | tee "\$SERVER_LOGFILE"
 			echo \$? > "$TMPDIR/server.exit-code"
 		EOF
 
