@@ -177,11 +177,18 @@ Core.Server::sendCommand () {
 			error <<< "**$INSTANCE_TEXT** is not running!"
 			return
 		}
-
-		local args="$(quote "$@")"
+		# Process escaped quotes
+		local args=""
+		local arg
+		for arg in "$@"; do
+			# Replace \" with "
+			arg="${arg//\\\"/\"}"
+			args+="$arg "
+		done
+		args="${args% }"  # Remove trailing space
+		
 		log <<< "Sending the following command to $INSTANCE_TEXT:"
 		log <<< "    $args"
-
 		echo "$args" | tmux-send -t ":$APP-server"
 	fi
 }
