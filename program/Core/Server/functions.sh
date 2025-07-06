@@ -178,7 +178,7 @@ Core.Server::sendCommand () {
 			return
 		}
 
-		local args="$(quote "$@")"
+		local args="$@"
 		log <<< "Sending the following command to $INSTANCE_TEXT:"
 		log <<< "    $args"
 
