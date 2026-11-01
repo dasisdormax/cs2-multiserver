@@ -25,7 +25,7 @@ SteamAPIHelper::getNewToken () {
 	local MEMO
 	local TMPFILE
 	URL=https://api.steampowered.com/IGameServersService/CreateAccount/v1
-	MEMO="[cs2-multiserver] $(hostname), instance @$INSTANCE"
+	MEMO="[cs2-multiserver] $(uname -n), instance @$INSTANCE"
 	echo "Creating a new game server with memo '$MEMO'" >&2
 	DATA="key=$APIKEY&appid=$SAH_APPID&memo=$MEMO"
 	TMPFILE="$(mktemp)"

@@ -59,12 +59,12 @@ While the _MULTI_ features are the highlight, managing a single server for yours
 
 ### Prerequisites
 
-These scripts run in `bash` in _Linux_ or _WSL2_ for Windows, and require several typical and some less common utilities installed. Also note that SteamCMD is a 32-bit application, so you'll have to install the 32-bit support libraries for your system, as described on [the SteamCMD Wiki page](https://developer.valvesoftware.com/wiki/SteamCMD#Linux). You will need at least 60 GB of disk space.
+These scripts run in `bash` in _Linux_ or _WSL2_ for Windows, and require Python 3.8 or later and several other utilities. Also note that SteamCMD is a 32-bit application, so you'll have to install the 32-bit support libraries for your system, as described on [the SteamCMD Wiki page](https://developer.valvesoftware.com/wiki/SteamCMD#Linux). You will need at least 60 GB of disk space.
 
 For Ubuntu 22.04 LTS, use the following command:
 
 ```
-sudo apt install lib32gcc-s1 lib32stdc++6 jq unzip inotify-tools
+sudo apt install lib32gcc-s1 lib32stdc++6 jq unzip inotify-tools python3
 ```
 
 If you run a different Linux distribution, the commands and package names may differ. If you need to install additional applications, the script will tell you which commands are unavailable.

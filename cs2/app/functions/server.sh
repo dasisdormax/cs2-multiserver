@@ -117,7 +117,7 @@ App::buildLaunchCommand () {
 	)
 
 	LAUNCH_DIR="$INSTANCE_DIR/game/bin/linuxsteamrt64"
-	local library_path="$INSTANCE_DIR/game/bin/linuxsteamrt64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+	local library_path="$INSTANCE_DIR/game/bin/linuxsteamrt64:$HOME/Steam/steamcmd/linux64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 	LAUNCH_CMD="env $(printf '%q' "LD_LIBRARY_PATH=$library_path") $(quote "./cs2" "${LAUNCH_ARGS[@]}")"
 }
 

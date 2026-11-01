@@ -66,13 +66,15 @@ Core.Server::requestStart () {
 	cat > "$TMPDIR/server-start.sh"   <<-EOF
 			#! /bin/bash
 			$(declare -f timestamp)
+			export MSM_REDACT_APIKEY=$(printf '%q' "$APIKEY")
+			export MSM_REDACT_GSLT=$(printf '%q' "$GSLT")
 			cd "$LAUNCH_DIR"
 			SERVER_LOGFILE="$LOGDIR/\$(timestamp)-server.log"
 			LOG_LINK="$LOGDIR/server.log"
 			rm -f "\$LOG_LINK"
 			ln -s "\$SERVER_LOGFILE" "\$LOG_LINK"
-			stdbuf -o0 -e0 $LAUNCH_CMD 2>&1 | tee "\$SERVER_LOGFILE"
-			echo \$? > "$TMPDIR/server.exit-code"
+			stdbuf -o0 -e0 $LAUNCH_CMD 2>&1 | python3 "$THIS_DIR/program/Core/Server/redact.py" | tee "\$SERVER_LOGFILE"
+			echo \${PIPESTATUS[0]} > "$TMPDIR/server.exit-code"
 		EOF
 
 	# TODO: App-specific variables to pass to server control, instead of port

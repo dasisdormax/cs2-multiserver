@@ -49,12 +49,14 @@ fi
 ############################### CHECK DEPENDENCIES ###############################
 
 # Check required programs
-local programs="sed awk tmux wget tar jq readlink inotifywait"
+local programs="sed awk tmux wget tar jq readlink inotifywait python3"
 local program
 for program in $programs; do
 	[[ -x $(which $program) ]] ||
 		fatal <<< "The program **$program** could not be found on your system!" || return
 done
+python3 -c 'import sys; sys.exit(sys.version_info < (3, 8))' ||
+	fatal <<< "Python 3.8 or later is required!" || return
 
 
 
