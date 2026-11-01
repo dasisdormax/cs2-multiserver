@@ -11,27 +11,29 @@ import sys
 
 class Redactor:
     def __init__(self, secrets):
-        self.secrets = tuple(secret for secret in secrets if secret)
-        self.pending = b""
+        self.prefixes = tuple(secret[:6] for secret in secrets if secret)
+        self.max_prefix = max((len(prefix) for prefix in self.prefixes), default=0)
+        self.recent = b""
+        self.masking = False
 
     def feed(self, chunk):
         output = bytearray()
         for byte in chunk:
-            self.pending += bytes((byte,))
-            while self.pending:
-                if self.pending in self.secrets:
-                    output.extend(b"[REDACTED]")
-                    self.pending = b""
-                elif any(secret.startswith(self.pending) for secret in self.secrets):
-                    break
-                else:
-                    output.append(self.pending[0])
-                    self.pending = self.pending[1:]
+            char = bytes((byte,))
+            if self.masking and not char.isspace():
+                output.extend(b"*")
+                continue
+            self.masking = False
+            output.extend(char)
+            if self.max_prefix:
+                self.recent = (self.recent + char)[-self.max_prefix:]
+                if any(self.recent.endswith(prefix) for prefix in self.prefixes):
+                    self.masking = True
+                    self.recent = b""
         return bytes(output)
 
     def finish(self):
-        pending, self.pending = self.pending, b""
-        return pending
+        return b""
 
 
 def main():
@@ -45,7 +47,7 @@ def main():
     try:
         logfile = Path(logdir) / (datetime.datetime.now().strftime("%y%m%d_%H:%M:%S") + "-server.log")
         link = Path(logdir) / "server.log"
-        with logfile.open("wb", buffering=0) as log:
+        with logfile.open("wb") as log:
             link.unlink(missing_ok=True)
             link.symlink_to(logfile.absolute())
             # The server shares the terminal's process group. Let it handle signals

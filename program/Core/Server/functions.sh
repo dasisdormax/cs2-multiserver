@@ -57,7 +57,7 @@ Core.Server::requestStart () {
 	# Load instance configuration
 	::hookable App::buildLaunchCommand || return
 	LAUNCH_DIR="${LAUNCH_DIR-"$INSTANCE_DIR"}"
-	LAUNCH_CMD_REDACTED=$(echo "$LAUNCH_CMD" | sed -E 's/[0-9a-fA-F]{10,}([0-9a-fA-F]{6})/******\1/g')
+	LAUNCH_CMD_REDACTED=$(echo "$LAUNCH_CMD" | sed -E 's/([0-9a-fA-F]{6})[0-9a-fA-F]{10,}/\1******/g')
 
 	info <<< "Server working directory: **$LAUNCH_DIR**"
 	info <<< "Server launch command:"
