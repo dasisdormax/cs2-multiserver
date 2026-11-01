@@ -157,7 +157,7 @@ App::isUpToDate () {
 
 	rm "$STEAMCMD_OUT" 2>/dev/null
 	# Get current build id through SteamCMD
-	MSM_LOGFILE="$STEAMCMD_OUT" log-cmd "$HOME/Steam/steamcmd/steamcmd.sh" +runscript "$STEAMCMD_SCRIPT" >&3
+	MSM_LOGFILE="$STEAMCMD_OUT" log-cmd "$HOME/Steam/steamcmd/steamcmd.sh" +runscript "$STEAMCMD_SCRIPT" >&3 || return 9
 
 	local oldbuildid=$(cat "$APPMANIFEST" | grep "buildid" | awk '{ print $2 }')
 	local newbuildid=$(
@@ -169,7 +169,12 @@ App::isUpToDate () {
 			grep "buildid" | awk '{ print $2 }'
 		)
 
-	(( $? == 0 )) || error <<< "Could not search for updates!" || return 9
+	oldbuildid=${oldbuildid//\"/}
+	newbuildid=${newbuildid//\"/}
+	[[ $oldbuildid =~ ^[0-9]+$ && $newbuildid =~ ^[0-9]+$ ]] || {
+		error <<< "Could not read installed or latest build ID."
+		return 9
+	}
 
 	debug <<< "Installed build is $oldbuildid, most recent build is $newbuildid."
 
@@ -199,6 +204,7 @@ App::performUpdate () (
 	local try=0
 	local code=1
 	while (( $code && ++try <= tries )); do
+		truncate -s 0 "$MSM_LOGFILE" || return 1
 		log <<-EOF | catinfo
 
 			####################################################
@@ -209,9 +215,10 @@ App::performUpdate () (
 		EOF
 
 		log-cmd "$HOME/Steam/steamcmd/steamcmd.sh" +runscript "$STEAMCMD_SCRIPT"
+		local steamcode=$?
 		log <<< ""
 
-		egrep "Success! App '730'.*(fully installed|up to date)" \
+		(( steamcode == 0 )) && egrep "Success! App '730'.*(fully installed|up to date)" \
 		      "$MSM_LOGFILE" > /dev/null                   && local code=0
 
 	done

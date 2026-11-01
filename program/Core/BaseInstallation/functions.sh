@@ -12,6 +12,7 @@
 Core.BaseInstallation::registerCommands () {
 	simpleCommand "Core.BaseInstallation::requestUpdate" update install
 	simpleCommand "Core.BaseInstallation::requestRepair" repair validate
+	simpleCommand "Core.BaseInstallation::requestReinstall" reinstall
 	oneArgCommand "Core.BaseInstallation::cloneFrom" clone
 }
 
@@ -143,6 +144,30 @@ Core.BaseInstallation::requestRepair () {
 	ACTION="repair" Core.BaseInstallation::startUpdate
 }
 
+Core.BaseInstallation::requestReinstall () (
+	requireUpdater || return
+	Core.BaseInstallation::isExisting || return 1
+	local base_path
+	base_path=$(readlink -f -- "$INSTALL_DIR") || return 1
+	[[ $base_path && $base_path != / && $base_path != "$HOME" ]] || {
+		error <<< "Refusing to reinstall in unsafe directory **$INSTALL_DIR**."
+		return 1
+	}
+	local inst
+	for inst in "" $(Core.Instance::listInstances); do
+		( INSTANCE=$inst; Core.Instance::select; Core.Server::isRunning ) && {
+			error <<< "Stop the base server and all instances before reinstalling."
+			return 1
+		}
+	done
+	warning <<-EOF
+		Reinstalling will delete all files in **$INSTALL_DIR**, except
+		its msm.d directory. This includes any custom files in the base.
+	EOF
+	promptN "Delete the base installation and reinstall it?" || return 1
+	ACTION=reinstall Core.BaseInstallation::startUpdate
+)
+
 
 Core.BaseInstallation::requestUpdate () {
 
@@ -153,10 +178,24 @@ Core.BaseInstallation::requestUpdate () {
 
 	log <<< "Checking for updates ..."
 
-	Core.BaseInstallation::isUpToDate && {
+	if [[ -e "$INSTALL_DIR/msm.d/update-incomplete" ]]; then
+		if [[ -e "$INSTALL_DIR/msm.d/cloned-from" && $(cat "$INSTALL_DIR/msm.d/update-incomplete") == update ]]; then
+			warning <<< "A clone update did not finish. Retrying it."
+			ACTION=update Core.BaseInstallation::startUpdate
+		else
+			warning <<< "An update did not finish. Validating the base installation."
+			ACTION=repair Core.BaseInstallation::startUpdate
+		fi
+		return $?
+	fi
+
+	Core.BaseInstallation::isUpToDate
+	local check_status=$?
+	(( check_status == 0 )) && {
 		info <<< "The base installation is already up to date."
 		return
 	}
+	(( check_status == 9 )) && return 1
 
 	info <<< "The base installation needs to be updated!"
 
@@ -216,6 +255,7 @@ Core.BaseInstallation::startUpdate () (
 
 	log <<< ""
 	requireUpdater || return
+	printf "%s\n" "$ACTION" > "$INSTALL_DIR/msm.d/update-incomplete" || return 1
 
 	stopAllInstances
 
@@ -225,12 +265,15 @@ Core.BaseInstallation::startUpdate () (
 
 	# if this is a clone, update from that host instead of the app updater
 	# Note: a repair action will always use the app updater
-	if [[ -e "$INSTALL_DIR/msm.d/cloned-from" && $ACTION = update ]]; then
+	if [[ $ACTION = reinstall ]]; then
+		find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 ! -name msm.d -exec rm -rf -- {} + && App::performUpdate
+	elif [[ -e "$INSTALL_DIR/msm.d/cloned-from" && $ACTION = update ]]; then
 		Core.BaseInstallation::updateFromClone
 	else
 		App::performUpdate
 	fi
 	local errno=$?
+	(( errno )) || rm -f "$INSTALL_DIR/msm.d/update-incomplete" || errno=1
 
 	########## Update timestamp on app file, so clients know that files may have changed
 
@@ -243,7 +286,7 @@ Core.BaseInstallation::startUpdate () (
 	if (( $errno )); then
 		error <<-EOF
 			${ACTION^} failed. For more information, see the log file
-			**$UPDATE_LOGFILE**.
+			in **$USER_DIR/$APP/log/base**.
 		EOF
 	else
 		success <<< "${ACTION^} of your $APP server completed successfully!"

@@ -28,9 +28,3 @@ SourcemodHelper::unpackTar () {
 	local tarfile="$(SourcemodHelper::downloadFile "$@")"
 	[[ -r $tarfile ]] && tar xzf "$tarfile"
 }
-
-SourcemodHelper::downloadSmx () {
-	local smxname="${3-${1##*/}}"
-	local smxfile="$(SourcemodHelper::downloadFile "$@")"
-	[[ -r $smxfile ]] && cp "$smxfile" "$SM_TMP_PLUGIN_DIR/$smxname"
-}

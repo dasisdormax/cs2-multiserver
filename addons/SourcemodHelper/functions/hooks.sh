@@ -1,60 +1,41 @@
 #! /bin/bash
-## vim: noet:sw=0:sts=0:ts=4
 
 ::registerHook before~App::buildLaunchCommand SourcemodHelper::initVars
 ::registerHook after~App::buildLaunchCommand SourcemodHelper::updateInstance
 
-SourcemodHelper::updateInstance () {
-	[[ $SM_PLUGINS ]] || {
-		rmdir "$SM_TMP_DIR" 2>/dev/null
-		return
+SourcemodHelper::updateInstance () (
+	trap 'rm -rf -- "$SM_TMP_DIR"' EXIT
+	cd "$SM_TMP_DIR" || return
+	SourcemodHelper::loadPackage metamod || return
+	SourcemodHelper::loadPackage counterstrikesharp || return
+
+	local gameinfo="$SM_TARGET_DIR/gameinfo.gi"
+	[[ -f $gameinfo && ! -L $gameinfo ]] || {
+		error <<< "Cannot update instance gameinfo.gi: $gameinfo"
+		return 1
 	}
-	warning <<-EOF
-		The Sourcemod helper plugin is in alpha stage! This will overwrite
-		your modifications in your instance's sourcemod file on every launch!
-		You can update configuration for all managed instances by modifying
-		the files in **$SM_CONFIG_DIR**
-	EOF
-	(
-		cd "$SM_TMP_DIR"
-		SourcemodHelper::loadPackage metamod || return
-		SourcemodHelper::loadPackage sourcemod || return
-		for package in $SM_PACKAGES; do
-			SourcemodHelper::loadPackage $package || return
-		done
-		SourcemodHelper::updateConfig || return
-		SourcemodHelper::updatePlugins || return
-	) || return
+	if ! grep -Eq '^[[:space:]]*Game[[:space:]]+csgo/addons/metamod([[:space:]]|$)' "$gameinfo"; then
+		grep -Eq '^[[:space:]]*Game_LowViolence[[:space:]]+csgo_lv' "$gameinfo" || {
+			error <<< "Cannot find the Metamod insertion point in $gameinfo."
+			return 1
+		}
+		local tmpfile
+		tmpfile=$(mktemp "${gameinfo}.XXXXXX") || return
+		sed '/^[[:space:]]*Game_LowViolence[[:space:]]\+csgo_lv/a\			Game csgo/addons/metamod' "$gameinfo" > "$tmpfile" || { rm -f "$tmpfile"; return 1; }
+		chmod --reference="$gameinfo" "$tmpfile" && mv -f "$tmpfile" "$gameinfo" || return
+	fi
 
-	# Copy addon files to instance's game directory
-	cp -r "$SM_TMP_DIR"/* "$SM_TARGET_DIR"
-
-	# Move to last_state directory for easier debugging
-	rm -rf "$SM_HOME/last_state"
-	mv "$SM_TMP_DIR" "$SM_HOME/last_state"
-}
-
-SourcemodHelper::updateConfig () {
-	# Initialize config dir
-	echo "Updating sourcemod configuration ..."
-	mkdir -p "$SM_CONFIG_DIR"
-	cp -n "$SM_TMP_CONFIG_DIR/admins_simple.ini" "$SM_CONFIG_DIR"
-	cp -n "$SM_TMP_CONFIG_DIR/databases.cfg" "$SM_CONFIG_DIR"
-	
-	# Copy configs to instance directory
-	cp -r "$SM_CONFIG_DIR"/* "$SM_TMP_CONFIG_DIR"
-}
-
-SourcemodHelper::updatePlugins () {
-	echo "Updating sourcemod plugins ..."
-
-	# Disable all plugins first
-	mkdir -p "$SM_TMP_PLUGIN_DIR/disabled"
-	mv "$SM_TMP_PLUGIN_DIR"/*.smx "$SM_TMP_PLUGIN_DIR/disabled"
-
-	# Re-enable the plugins that the user wants
-	local plugin
-	for plugin in $SM_PLUGINS; do
-		mv "$SM_TMP_PLUGIN_DIR/disabled/$plugin.smx" "$SM_TMP_PLUGIN_DIR"
+	# Package defaults must not replace user plugins or configuration.
+	local dir
+	for dir in configs plugins; do
+		if [[ -d "addons/counterstrikesharp/$dir" ]]; then
+			mkdir -p "$SM_TARGET_DIR/addons/counterstrikesharp/$dir" || return
+			cp -rn "addons/counterstrikesharp/$dir/." "$SM_TARGET_DIR/addons/counterstrikesharp/$dir/" || return
+			rm -rf "addons/counterstrikesharp/$dir" || return
+		fi
 	done
-}
+	if [[ -e "$SM_TARGET_DIR/addons/metamod/metaplugins.ini" ]]; then
+		rm -f addons/metamod/metaplugins.ini || return
+	fi
+	cp -r addons "$SM_TARGET_DIR/" || return
+)

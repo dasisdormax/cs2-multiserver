@@ -23,7 +23,7 @@ Being specifically designed for LAN environments, it allows you to control many 
 
 ### Upgrading to CS2
 
-This is a large update to *cs2-multiserver* with updated configuration and instance directories. Also, some experimental automation features (for the steam workshop and Sourcemod plugins) were added for CS:GO, but these were not yet updated and tested for CS2.
+This is a large update to *cs2-multiserver* with updated configuration and instance directories. Also, some experimental automation features were added for CS:GO.
 
 As CS2 requires an active Steam login for installing and launching the server, the previous multi user system is not supported anymore. Every user needs to install their own copy of the server now.
 
@@ -42,7 +42,7 @@ While the CS:GO version worked quite reliably, CS2 support was not yet tested mu
 	* Running a server basically works (Including logging)! Yay!
 * Advanced features (Untested with CS2)
 	* Copying and controlling instances over the network
-	* Sourcemod installation, configuration and plugin management (Please report outdated / missing plugins)
+	* Metamod and CounterStrikeSharp installation for each instance
 
 
 ### The original vision
@@ -80,6 +80,8 @@ Also, you need a Steam account that owns the game to create a CS2 dedicated serv
 2. For easier invocation of the main script (just by typing `cs2-server` in your terminal), create a symlink with the following command: `ln -s /path/to/cs2-multiserver/msm /usr/local/bin/cs2-server`
 3. Run `cs2-server setup`. This will guide you through creating the initial configuration.
 4. Install the game server and updates with `cs2-server update` (possibly automated by cron)
+
+If an update is interrupted, run `cs2-server validate` to check the base game files. If that does not fix the installation, stop the base server and all instances, then run `cs2-server reinstall`. After confirmation, this deletes the contents of the base installation except its `msm.d` directory and downloads the game again. Back up any custom files in the base first.
  
 
 ### Instances
@@ -90,6 +92,12 @@ If you only want to run a single server, it is not required to create a separate
 
 Create your own instance (a fork of the base installation) named _test01_ using `cs2-server @test01 create`.
 
+
+### CounterStrikeSharp
+
+To enable the bundled helper, add `SourcemodHelper` to `MSM_ADDONS` in `~/msm.d/cs2/cfg/defaults.conf`. Restart each instance to install the pinned Metamod and CounterStrikeSharp packages. The helper uses the CounterStrikeSharp Linux package with the .NET runtime. Install plugins and their configuration under each instance's `game/csgo/addons/counterstrikesharp/` directory. The helper preserves those files when it updates the frameworks. Existing SourceMod files are not removed, but SourceMod and WarMod are no longer managed by the helper.
+
+The helper adds Metamod to each instance's `gameinfo.gi`. Use `meta list` in the server console to check that CounterStrikeSharp loaded. Framework versions are pinned in `addons/SourcemodHelper/packages/` and may need updating after a CS2 release.
 
 ### Configuration and Environment Variables
 

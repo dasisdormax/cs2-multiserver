@@ -1,7 +1,5 @@
 #! /bin/bash
-## vim: noet:sw=0:sts=0:ts=4
-
-local ADDON_NAME="Sourcemod Helper"
-local ADDON_DESCRIPTION="This addon helps downloading and configuring MetaMod:Source, Sourcemod, plugins and extensions for each instance."
+local ADDON_NAME="CounterStrikeSharp Helper"
+local ADDON_DESCRIPTION="Installs Metamod and CounterStrikeSharp for each instance."
 local ADDON_WEBSITE="https://github.com/dasisdormax/cs2-multiserver"
-local ADDON_AUTHOR="Maximilian '//chilly™//' Wende <dasisdormax@mailbox.org>"
+local ADDON_AUTHOR="Maximilian Wende <dasisdormax@mailbox.org>"

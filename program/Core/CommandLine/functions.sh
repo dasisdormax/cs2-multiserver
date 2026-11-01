@@ -49,6 +49,7 @@ $(printf "\x1b[36m%s\x1b[m"   "**ADMINISTRATION COMMANDS:** working on the base 
     setup    > Configure this program and install dependencies
     update   > Install/Update the game server
     validate > Repair broken/missing game files
+    reinstall > Delete base game files and install them again
 
 Commands will be executed in the order they are given. If a command fails,
 subsequent commands will not be executed.
