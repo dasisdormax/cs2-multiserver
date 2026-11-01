@@ -40,7 +40,7 @@ ln -s ExamplePlugin "$testdir/other/addons/ExampleAlias"
 THIS_DIR="$testdir/other"
 ::init
 MSM_ADDONS='ExampleAlias ExamplePlugin' ::loadAddons
-[[ $RequestedModules == ' ExamplePlugin' ]]
+[[ $RequestedModules == ' ExampleAlias ExamplePlugin' ]]
 THIS_DIR=$repo
 (
   set +u

@@ -135,16 +135,8 @@ ALL_HOOKS=" "
 ::loadAddons () {
 	local addon dir target canonical canonical_dir
 	for addon in $MSM_ADDONS; do
-		# Resolve addon aliases to their module name before deduplication.
-		dir=$(::moduleDir "$addon") || dir=
-		if [[ -L $dir ]]; then
-			target=$(readlink -f -- "$dir") || return 1
-			canonical=${target##*/}
-			canonical_dir=$(::moduleDir "$canonical") || canonical_dir=
-			if [[ $canonical_dir && $(readlink -f -- "$canonical_dir") == "$target" ]]; then
-				addon=$canonical
-			fi
-		fi
+		# Keep configurations written before the addon was renamed working.
+		[[ $addon == SourcemodHelper ]] && addon=PluginHelper
 		::add $addon
 	done
 	::update

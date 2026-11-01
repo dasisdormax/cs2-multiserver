@@ -159,6 +159,69 @@ Core.Setup::beginSetup () {
 
 ############################### ADMIN INSTALLATION ##############################
 
+# Let the user choose bundled and user-provided addons for the initial config.
+Core.Setup::selectAddons () {
+	local dir name ADDON_DESCRIPTION input marker i found
+	local -a names=() descriptions=() selected=()
+	for dir in "$THIS_DIR"/addons/* "$USER_DIR"/addons/*; do
+		[[ -d $dir && -r $dir/addon.info ]] || continue
+		name=${dir##*/}
+		[[ $name == AddonTemplate || ! $name =~ ^[a-zA-Z0-9_-]+$ ]] && continue
+		# Bundled addons take precedence over user addons with the same name.
+		found=
+		for i in "${names[@]}"; do
+			[[ $i == "$name" ]] && found=1 && break
+		done
+		[[ $found ]] && continue
+		ADDON_DESCRIPTION=
+		# Load metadata in this function so its local declarations remain available.
+		builtin . "$dir/addon.info"
+		names+=("$name")
+		descriptions+=("${ADDON_DESCRIPTION:-No description available.}")
+		if [[ $name == PluginHelper || $name == SteamAPIHelper ]]; then
+			selected+=(1)
+		else
+			selected+=(0)
+		fi
+	done
+
+	log <<-EOF
+
+		Addons
+		======
+
+		Addons hook into the server management to add optional features.
+		This sets the MSM_ADDONS configuration option.
+	EOF
+	while :; do
+		printf '\nWhich addons do you want to use?\n'
+		for ((i=0; i<${#names[@]}; i++)); do
+			marker=' '
+			[[ ${selected[i]} == 1 ]] && marker=X
+			printf '%d. [%s] %s - %s\n' "$((i+1))" "$marker" "${names[i]}" "${descriptions[i]}"
+		done
+		printf 'Enter a number to toggle selection, or press Enter to confirm: '
+		IFS= read -r input || return 1
+		[[ -z $input ]] && break
+		found=
+		for ((i=0; i<${#names[@]}; i++)); do
+			if [[ $input == "$((i+1))" ]]; then
+				selected[i]=$((1 - selected[i]))
+				found=1
+				break
+			fi
+		done
+		[[ $found ]] || printf 'Invalid selection. Enter a number from the list.\n'
+	done
+
+	MSM_ADDONS=
+	for ((i=0; i<${#names[@]}; i++)); do
+		[[ ${selected[i]} == 1 ]] || continue
+		MSM_ADDONS="${MSM_ADDONS:+$MSM_ADDONS }${names[i]}"
+	done
+}
+
+
 # TODO: make this function smaller
 Core.Setup::setupAsAdmin () {
 
@@ -198,6 +261,8 @@ Core.Setup::setupAsAdmin () {
 		Core.BaseInstallation::create
 	done
 
+	Core.Setup::selectAddons || return
+
 	# Final Steps
 	Core.Instance::select
 	App::finalizeInstance
@@ -208,7 +273,6 @@ Core.Setup::setupAsAdmin () {
 	# Create the initial instance configuration files
 	cp -rn "$APP_DIR"/cfg/* "$INSTCFGDIR" 2>/dev/null
 
-	MSM_ADDONS=""
 	Core.Setup::writeConfig && {
 		log <<< ""
 		success <<-EOF

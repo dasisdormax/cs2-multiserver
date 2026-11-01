@@ -93,7 +93,7 @@ Create your own instance (a fork of the base installation) named _test01_ using 
 
 ### CounterStrikeSharp
 
-To enable the bundled helper, add `PluginHelper` to `MSM_ADDONS` in `~/msm.d/cs2/cfg/defaults.conf`. Existing `SourcemodHelper` entries in `MSM_ADDONS` remain valid as an alias. Restart each instance to install the pinned Metamod and CounterStrikeSharp packages. The helper uses the CounterStrikeSharp Linux package with the .NET runtime. Install plugins and their configuration under each instance's `game/csgo/addons/counterstrikesharp/` directory. The helper preserves those files when it updates the frameworks. Existing SourceMod files are not removed, but SourceMod and WarMod are no longer managed by the helper.
+Setup selects `PluginHelper` by default. You can change the selection in `MSM_ADDONS` in `~/msm.d/cs2/cfg/defaults.conf`. Existing `SourcemodHelper` entries in `MSM_ADDONS` remain valid as an alias. Restart each instance to install the pinned Metamod and CounterStrikeSharp packages. The helper uses the CounterStrikeSharp Linux package with the .NET runtime. Install plugins and their configuration under each instance's `game/csgo/addons/counterstrikesharp/` directory. The helper preserves those files when it updates the frameworks. Existing SourceMod files are not removed, but SourceMod and WarMod are no longer managed by the helper.
 
 The helper adds Metamod to each instance's `gameinfo.gi`. Use `meta list` in the server console to check that CounterStrikeSharp loaded. Framework versions are pinned in `addons/PluginHelper/packages/` and may need updating after a CS2 release.
 
