@@ -58,21 +58,21 @@ THIS_DIR=$repo
 
 ::registerHook () { true; }
 source "$repo/addons/PluginHelper/functions/hooks.sh"
-SM_TARGET_DIR="$testdir/instance/game/csgo"
-SM_TMP_DIR="$testdir/stage"
-mkdir -p "$SM_TARGET_DIR/addons/counterstrikesharp/plugins/test" "$SM_TMP_DIR"
-printf 'Game_LowViolence csgo_lv\n' > "$SM_TARGET_DIR/gameinfo.gi"
-printf 'keep' > "$SM_TARGET_DIR/addons/counterstrikesharp/plugins/test/test.dll"
+PH_TARGET_DIR="$testdir/instance/game/csgo"
+PH_TMP_DIR="$testdir/stage"
+mkdir -p "$PH_TARGET_DIR/addons/counterstrikesharp/plugins/test" "$PH_TMP_DIR"
+printf 'Game_LowViolence csgo_lv\n' > "$PH_TARGET_DIR/gameinfo.gi"
+printf 'keep' > "$PH_TARGET_DIR/addons/counterstrikesharp/plugins/test/test.dll"
 PluginHelper::loadPackage () {
   mkdir -p addons/metamod addons/counterstrikesharp/plugins/test
   printf replace > addons/counterstrikesharp/plugins/test/test.dll
   printf framework > addons/metamod/framework.so
 }
 PluginHelper::updateInstance
-[[ $(cat "$SM_TARGET_DIR/addons/counterstrikesharp/plugins/test/test.dll") == keep ]]
-[[ -f "$SM_TARGET_DIR/addons/metamod/framework.so" ]]
-[[ $(grep -c 'Game csgo/addons/metamod' "$SM_TARGET_DIR/gameinfo.gi") == 1 ]]
-mkdir -p "$SM_TMP_DIR"
+[[ $(cat "$PH_TARGET_DIR/addons/counterstrikesharp/plugins/test/test.dll") == keep ]]
+[[ -f "$PH_TARGET_DIR/addons/metamod/framework.so" ]]
+[[ $(grep -c 'Game csgo/addons/metamod' "$PH_TARGET_DIR/gameinfo.gi") == 1 ]]
+mkdir -p "$PH_TMP_DIR"
 PluginHelper::updateInstance
-[[ $(grep -c 'Game csgo/addons/metamod' "$SM_TARGET_DIR/gameinfo.gi") == 1 ]]
+[[ $(grep -c 'Game csgo/addons/metamod' "$PH_TARGET_DIR/gameinfo.gi") == 1 ]]
 printf 'Recovery and addon tests passed.\n'

@@ -97,6 +97,8 @@ Setup selects `PluginHelper` by default. You can change the selection in `MSM_AD
 
 The helper adds Metamod to each instance's `gameinfo.gi`. Use `meta list` in the server console to check that CounterStrikeSharp loaded. Framework versions are pinned in `addons/PluginHelper/packages/` and may need updating after a CS2 release.
 
+CounterStrikeSharp is pinned to v1.0.368, the last release with .NET 8. With CounterStrikeSharp v1.0.379 and its bundled .NET 10, the server crashes when quitting, which breaks our error handling. Plugins that require newer CounterStrikeSharp APIs or .NET 10 cannot run on this version. This older release may also lack fixes for current CS2 builds.
+
 ### Configuration and Environment Variables
 
 You can set most server configuration options by opening `~/msm.d/cs2/cfg/.../server.conf` with your text editor of choice. Most importantly, you need to set a separate `PORT` for every new instance (recommended: 27015, 27115, 27215, ...). You can also set some options on the command line, e.g. `MAP='de_nuke' cs2-server @lan01 start`.

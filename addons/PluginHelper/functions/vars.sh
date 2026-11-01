@@ -1,9 +1,9 @@
 #! /bin/bash
 
 PluginHelper::initVars () {
-	SM_HOME="$USER_DIR/$APP/addons/sourcemod-helper"
-	SM_FILECACHE_DIR="$SM_HOME/filecache"
-	SM_TARGET_DIR="$INSTANCE_DIR/game/csgo"
-	mkdir -p "$SM_FILECACHE_DIR" "$SM_HOME/tmp" || return
-	SM_TMP_DIR=$(mktemp -d -p "$SM_HOME/tmp")
+	PH_HOME="$USER_DIR/$APP/addons/plugin-helper"
+	PH_FILECACHE_DIR="$PH_HOME/filecache"
+	PH_TARGET_DIR="$INSTANCE_DIR/game/csgo"
+	mkdir -p "$PH_FILECACHE_DIR" "$PH_HOME/tmp" || return
+	PH_TMP_DIR=$(mktemp -d -p "$PH_HOME/tmp")
 }

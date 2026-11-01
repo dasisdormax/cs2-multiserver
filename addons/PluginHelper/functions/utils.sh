@@ -4,7 +4,7 @@
 # downloads a file and validates its checksum
 PluginHelper::downloadFile () {
 	[[ $2 ]] || return
-	local cachefile="$SM_FILECACHE_DIR/$2"
+	local cachefile="$PH_FILECACHE_DIR/$2"
 	[[ -r $cachefile ]] || {
 		local tmp=$(mktemp)
 		wget -O "$tmp" "$1" || return

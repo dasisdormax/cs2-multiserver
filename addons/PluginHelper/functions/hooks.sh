@@ -4,12 +4,12 @@
 ::registerHook after~App::buildLaunchCommand PluginHelper::updateInstance
 
 PluginHelper::updateInstance () (
-	trap 'rm -rf -- "$SM_TMP_DIR"' EXIT
-	cd "$SM_TMP_DIR" || return
+	trap 'rm -rf -- "$PH_TMP_DIR"' EXIT
+	cd "$PH_TMP_DIR" || return
 	PluginHelper::loadPackage metamod || return
-	PluginHelper::loadPackage counterstrikesharp || return
+	PluginHelper::loadPackage cssharp || return
 
-	local gameinfo="$SM_TARGET_DIR/gameinfo.gi"
+	local gameinfo="$PH_TARGET_DIR/gameinfo.gi"
 	[[ -f $gameinfo && ! -L $gameinfo ]] || {
 		error <<< "Cannot update instance gameinfo.gi: $gameinfo"
 		return 1
@@ -29,13 +29,13 @@ PluginHelper::updateInstance () (
 	local dir
 	for dir in configs plugins; do
 		if [[ -d "addons/counterstrikesharp/$dir" ]]; then
-			mkdir -p "$SM_TARGET_DIR/addons/counterstrikesharp/$dir" || return
-			cp -rn "addons/counterstrikesharp/$dir/." "$SM_TARGET_DIR/addons/counterstrikesharp/$dir/" || return
+			mkdir -p "$PH_TARGET_DIR/addons/counterstrikesharp/$dir" || return
+			cp -rn "addons/counterstrikesharp/$dir/." "$PH_TARGET_DIR/addons/counterstrikesharp/$dir/" || return
 			rm -rf "addons/counterstrikesharp/$dir" || return
 		fi
 	done
-	if [[ -e "$SM_TARGET_DIR/addons/metamod/metaplugins.ini" ]]; then
+	if [[ -e "$PH_TARGET_DIR/addons/metamod/metaplugins.ini" ]]; then
 		rm -f addons/metamod/metaplugins.ini || return
 	fi
-	cp -r addons "$SM_TARGET_DIR/" || return
+	cp -r addons "$PH_TARGET_DIR/" || return
 )
