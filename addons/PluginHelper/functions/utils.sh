@@ -2,7 +2,7 @@
 ## vim: noet:sw=0:sts=0:ts=4
 
 # downloads a file and validates its checksum
-SourcemodHelper::downloadFile () {
+PluginHelper::downloadFile () {
 	[[ $2 ]] || return
 	local cachefile="$SM_FILECACHE_DIR/$2"
 	[[ -r $cachefile ]] || {
@@ -19,12 +19,12 @@ SourcemodHelper::downloadFile () {
 	echo "$cachefile"
 }
 
-SourcemodHelper::unpackZip () {
-	local zipfile="$(SourcemodHelper::downloadFile "$@")"
+PluginHelper::unpackZip () {
+	local zipfile="$(PluginHelper::downloadFile "$@")"
 	[[ -r $zipfile ]] && unzip -q "$zipfile"
 }
 
-SourcemodHelper::unpackTar () {
-	local tarfile="$(SourcemodHelper::downloadFile "$@")"
+PluginHelper::unpackTar () {
+	local tarfile="$(PluginHelper::downloadFile "$@")"
 	[[ -r $tarfile ]] && tar xzf "$tarfile"
 }

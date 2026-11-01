@@ -1,6 +1,6 @@
 #! /bin/bash
 
-SourcemodHelper::initVars () {
+PluginHelper::initVars () {
 	SM_HOME="$USER_DIR/$APP/addons/sourcemod-helper"
 	SM_FILECACHE_DIR="$SM_HOME/filecache"
 	SM_TARGET_DIR="$INSTANCE_DIR/game/csgo"

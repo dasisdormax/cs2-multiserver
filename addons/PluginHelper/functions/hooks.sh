@@ -1,13 +1,13 @@
 #! /bin/bash
 
-::registerHook before~App::buildLaunchCommand SourcemodHelper::initVars
-::registerHook after~App::buildLaunchCommand SourcemodHelper::updateInstance
+::registerHook before~App::buildLaunchCommand PluginHelper::initVars
+::registerHook after~App::buildLaunchCommand PluginHelper::updateInstance
 
-SourcemodHelper::updateInstance () (
+PluginHelper::updateInstance () (
 	trap 'rm -rf -- "$SM_TMP_DIR"' EXIT
 	cd "$SM_TMP_DIR" || return
-	SourcemodHelper::loadPackage metamod || return
-	SourcemodHelper::loadPackage counterstrikesharp || return
+	PluginHelper::loadPackage metamod || return
+	PluginHelper::loadPackage counterstrikesharp || return
 
 	local gameinfo="$SM_TARGET_DIR/gameinfo.gi"
 	[[ -f $gameinfo && ! -L $gameinfo ]] || {

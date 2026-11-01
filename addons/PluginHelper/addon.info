@@ -1,5 +1,5 @@
 #! /bin/bash
-local ADDON_NAME="CounterStrikeSharp Helper"
+local ADDON_NAME="CSSharp Plugin Helper"
 local ADDON_DESCRIPTION="Installs Metamod and CounterStrikeSharp for each instance."
 local ADDON_WEBSITE="https://github.com/dasisdormax/cs2-multiserver"
 local ADDON_AUTHOR="Maximilian Wende <dasisdormax@mailbox.org>"
