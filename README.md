@@ -25,8 +25,6 @@ Being specifically designed for LAN environments, it allows you to control many 
 
 This is a large update to *cs2-multiserver* with updated configuration and instance directories. Also, some experimental automation features were added for CS:GO.
 
-As CS2 requires an active Steam login for installing and launching the server, the previous multi user system is not supported anymore. Every user needs to install their own copy of the server now.
-
 If you are upgrading from [csgo-multiserver](https://github.com/dasisdormax/csgo-multiserver), you may need to reinstall SteamCMD for everything to work (`rm -r ~/Steam/steamcmd`). 
 
 While the CS:GO version worked quite reliably, CS2 support was not yet tested much. If you run into trouble or have a suggestion for extra features, feel free to open an issue or fork and work on *cs2-multiserver* yourself.
@@ -71,7 +69,7 @@ sudo apt install lib32gcc-s1 lib32stdc++6 jq unzip inotify-tools
 
 If you run a different Linux distribution, the commands and package names may differ. If you need to install additional applications, the script will tell you which commands are unavailable.
 
-Also, you need a Steam account that owns the game to create a CS2 dedicated server. You will be asked your Steam login credentials during the server setup. Keep your Steam Guard authenticator ready.
+SteamCMD downloads the server using an anonymous login. A Steam account is not required for setup.
 
 
 ### Initial setup

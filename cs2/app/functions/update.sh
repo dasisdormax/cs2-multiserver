@@ -75,58 +75,7 @@ App::installSteamCMD () (
 
 
 App::installUpdater () {
-
-	App::installSteamCMD || return
-
-	# Once SteamCMD is installed, get the username and perform a first login
-	[[ $STEAM_USERNAME ]] && return
-	
-	out <<-EOF
-		
-		To install and update the CS2 game server, you need to log in to your
-		Steam account.
-	EOF
-
-	local SUCCESS=
-	until [[ $SUCCESS ]]; do
-		out <<-EOF
-
-			Please enter your Steam account's username (the one you log in with, not
-			your display name).
-
-		EOF
-		read -p "> Your steam username: " -r STEAM_USERNAME
-		[[ $STEAM_USERNAME ]] || continue
-		out <<-EOF
-
-			We will now try to log you in with that username. Steam will probably ask
-			you for your password and Steam Guard code.
-
-		EOF
-
-		local STEAMCMD_SCRIPT="$(mktemp)"
-		cat <<-EOF > "$STEAMCMD_SCRIPT"
-			login $STEAM_USERNAME
-			quit
-		EOF
-		log-cmd "$HOME/Steam/steamcmd/steamcmd.sh" +runscript "$STEAMCMD_SCRIPT"
-		log <<< ""
-		local steamcfg="$HOME/Steam/config/config.vdf"
-		[[ -r $steamcfg ]] || steamcfg="$HOME/.steam/steam/config/config.vdf"
-		[[ -r $steamcfg ]] || steamcfg="$HOME/.steam/config/config.vdf"
-		if [[ "$STEAM_USERNAME" == "anonymous" ]]; then
-			SUCCESS=1
-		else
-			grep "\"$STEAM_USERNAME\"" "$steamcfg" >/dev/null 2>&1 && SUCCESS=1
-		fi
-	done
-
-	success <<< "Steam login successful!"
-}
-
-
-App::printAdditionalConfig () {
-	echo "STEAM_USERNAME=$STEAM_USERNAME"
+	App::installSteamCMD
 }
 
 
@@ -149,7 +98,7 @@ App::isUpToDate () {
 	local STEAMCMD_SCRIPT="$TMPDIR/steamcmd-script"
 	local STEAMCMD_OUT="$TMPDIR/steamcmd-out"
 	cat <<-EOF > "$STEAMCMD_SCRIPT"
-		login $STEAM_USERNAME
+		login anonymous
 		app_info_update 1
 		app_info_print 730
 		quit
@@ -195,7 +144,7 @@ App::performUpdate () (
 	MSM_LOGFILE="$LOGDIR/$(timestamp)-$ACTION.log"
 	cat <<-EOF > "$STEAMCMD_SCRIPT"
 		force_install_dir "$INSTALL_DIR"
-		login $STEAM_USERNAME
+		login anonymous
 		app_update 730 $( [[ $ACTION == repair ]] && echo "validate" )
 		quit
 	EOF
