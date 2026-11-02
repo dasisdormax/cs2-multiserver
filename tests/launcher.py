@@ -3,6 +3,7 @@ import os
 import importlib.util
 from pathlib import Path
 import select
+import signal
 import subprocess
 import sys
 import tempfile
@@ -52,4 +53,15 @@ with tempfile.TemporaryDirectory() as directory:
     )
     assert result.returncode == 143
     assert (root / "exit").read_text() == "143\n"
+    process = subprocess.Popen(
+        [sys.executable, str(launcher), directory, directory, str(root / "exit"),
+         "--", sys.executable, "-c",
+         "import signal, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); print('ready', flush=True); time.sleep(60)"],
+        stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    assert select.select([process.stdout], [], [], 3)[0], "Child did not start"
+    assert process.stdout.readline() == b"ready\n"
+    process.send_signal(signal.SIGUSR1)
+    assert process.wait(timeout=3) == 137, process.stderr.read()
+    assert (root / "exit").read_text() == "137\n"
 print("Launcher tests passed.")

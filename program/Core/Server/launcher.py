@@ -44,6 +44,18 @@ def main():
                         (b"MSM_REDACT_APIKEY", b"MSM_REDACT_GSLT"))
     code = 1
     child = None
+    kill_requested = False
+
+    def force_stop(signum, frame):
+        nonlocal kill_requested
+        kill_requested = True
+        if child is not None:
+            try:
+                child.kill()
+            except ProcessLookupError:
+                pass
+
+    signal.signal(signal.SIGUSR1, force_stop)
     try:
         logfile = Path(logdir) / (datetime.datetime.now().strftime("%y%m%d_%H:%M:%S") + "-server.log")
         link = Path(logdir) / "server.log"
@@ -57,6 +69,8 @@ def main():
             child = subprocess.Popen(["stdbuf", "-o0", "-e0", *sys.argv[5:]],
                                      cwd=workdir, stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
+            if kill_requested:
+                force_stop(None, None)
             while chunk := os.read(child.stdout.fileno(), 4096):
                 output = redactor.feed(chunk)
                 log.write(output)
