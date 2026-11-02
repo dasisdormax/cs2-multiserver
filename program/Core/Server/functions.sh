@@ -51,6 +51,10 @@ Core.Server::requestStart () {
 			console using **$THIS_COMMAND @$INSTANCE console**.
 		EOF
 
+	if [[ -e "$INSTALL_DIR/msm.d/update-incomplete" ]]; then
+		promptN "The latest server update is incomplete. Launch anyway?" || return 1
+	fi
+
 	log <<< "Starting $INSTANCE_TEXT ..."
 	rm -f "$TMPDIR/stop"
 
