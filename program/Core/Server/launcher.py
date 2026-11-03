@@ -4,6 +4,7 @@
 import datetime
 import os
 from pathlib import Path
+import re
 import signal
 import subprocess
 import sys
@@ -17,19 +18,35 @@ class Redactor:
         self.masking = False
 
     def feed(self, chunk):
+        if not self.prefixes:
+            return chunk
         output = bytearray()
-        for byte in chunk:
-            char = bytes((byte,))
-            if self.masking and not char.isspace():
-                output.extend(b"*")
-                continue
-            self.masking = False
-            output.extend(char)
-            if self.max_prefix:
-                self.recent = (self.recent + char)[-self.max_prefix:]
-                if any(self.recent.endswith(prefix) for prefix in self.prefixes):
-                    self.masking = True
-                    self.recent = b""
+        pos = 0
+        while pos < len(chunk):
+            if self.masking:
+                match = re.search(rb"\s", chunk[pos:])
+                end = pos + match.start() if match else len(chunk)
+                output.extend(b"*" * (end - pos))
+                pos = end
+                if pos == len(chunk):
+                    break
+                self.masking = False
+
+            data = self.recent + chunk[pos:]
+            offset = len(self.recent)
+            # The byte-wise filter starts masking at the first prefix to end.
+            ends = [index + len(prefix) for prefix in self.prefixes
+                    if (index := data.find(prefix)) >= 0]
+            if not ends:
+                output.extend(chunk[pos:])
+                self.recent = data[-(self.max_prefix - 1):] if self.max_prefix > 1 else b""
+                break
+            end = min(ends)
+            consumed = end - offset
+            output.extend(chunk[pos:pos + consumed])
+            pos += consumed
+            self.recent = b""
+            self.masking = True
         return bytes(output)
 
     def finish(self):

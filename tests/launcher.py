@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import importlib.util
+import random
 from pathlib import Path
 import select
 import signal
@@ -19,6 +20,40 @@ assert redactor.feed(b"token123 done") == b"token1** done"
 assert redactor.finish() == b""
 assert module.Redactor([b"", b""]).feed(b"ordinary output") == b"ordinary output"
 assert module.Redactor([b"abc"]).feed(b"abc123 done") == b"abc*** done"
+
+# Compare chunked filtering with the original byte-wise rules, including
+# overlapping prefixes, whitespace, and prefixes split across reads.
+def reference(chunks, secrets):
+    prefixes = tuple(secret[:6] for secret in secrets if secret)
+    recent = b""
+    masking = False
+    result = []
+    for chunk in chunks:
+        output = bytearray()
+        for byte in chunk:
+            char = bytes((byte,))
+            if masking and not char.isspace():
+                output.extend(b"*")
+                continue
+            masking = False
+            output.extend(char)
+            recent = (recent + char)[-6:]
+            if any(recent.endswith(prefix) for prefix in prefixes):
+                masking = True
+                recent = b""
+        result.append(bytes(output))
+    return result
+
+rng = random.Random(42)
+for _ in range(2000):
+    alphabet = b"abc \t\n\r\v\f\x00\xff"
+    secrets = [rng.randbytes(rng.randrange(1, 8)) if rng.randrange(4) == 0 else
+               bytes(rng.choice(alphabet) for _ in range(rng.randrange(7)))
+               for _ in range(2)]
+    chunks = [bytes(rng.choice(alphabet) for _ in range(rng.randrange(20)))
+              for _ in range(10)]
+    redactor = module.Redactor(secrets)
+    assert [redactor.feed(chunk) for chunk in chunks] == reference(chunks, secrets)
 env = dict(os.environ, MSM_REDACT_APIKEY="secret-key", MSM_REDACT_GSLT="token123")
 child_code = """
 import os, sys, time

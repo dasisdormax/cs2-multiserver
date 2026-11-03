@@ -69,7 +69,7 @@ Also, you need a Steam account that owns the game to host public CS2 dedicated s
 
 1. Use `git clone https://github.com/dasisdormax/cs2-multiserver.git` to clone this repository to whatever place you like.
 2. For easier invocation of the main script (just by typing `cs2-server` in your terminal), create a symlink with the following command: `sudo ln -s /path/to/cs2-multiserver/msm /usr/local/bin/cs2-server`
-3. Run `cs2-server setup`. This will guide you through creating the initial configuration. The default game installation directory is `~/msm.d/cs2/base`. If you already have a CS2 installation, you can select its directory instead.
+3. Run `cs2-server setup`. This will guide you through creating the initial configuration.
 4. Install the game server and updates with `cs2-server update` (possibly automated by cron)
 
 
@@ -91,9 +91,9 @@ Before launching, configure your instance by editing the following file with you
 
 Things to check:
 
-* Use a unique combination of `__IP__` and `__PORT__` for every new instance, your servers will fail to start otherwise. 
+* Use a unique combination of `__IP__` and `__PORT__` for every new instance, your servers will fail to start otherwise.
   * _Recommendation:_ Keep `__IP__="0.0.0.0"`, change `__PORT__="27015"` to 27115, 27215, 27315, ...
-* Supply a separate Game Server Login Token as `GSLT="your-token"` (not needed for LAN-only servers)  
+* Supply a separate Game Server Login Token as `GSLT="your-token"` (not needed for LAN-only servers)
   * _Manual option:_ Open <https://steamcommunity.com/dev/managegameservers> and create a token using app ID `730`.
   * _Automatic option:_ Use the `SteamAPIHelper` [addon](docs/plugins.md) to automatically create tokens for your instances
 
