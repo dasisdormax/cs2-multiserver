@@ -7,7 +7,7 @@ Launch and set up **Counter-Strike 2** Dedicated Servers. (WIP)
 
 ## Getting Help
 
-Please read this README-File and the FAQ at <https://github.com/dasisdormax/cs2-multiserver/wiki/FAQ>.
+Please read this README-File, the [documentation](#documentation) and the FAQ at <https://github.com/dasisdormax/cs2-multiserver/wiki/FAQ>.
 
 
 
@@ -19,15 +19,6 @@ Please read this README-File and the FAQ at <https://github.com/dasisdormax/cs2-
 Being specifically designed for LAN environments, it allows you to control many servers running on multiple machines simultaneously. In addition, multiple server instances can share the same base files, saving your precious disk space and bandwidth.
 
 *cs2-multiserver* started as a fork of [csgo-server-launcher](https://github.com/crazy-max/csgo-server-launcher), but by now, all features have been rewritten by scratch.
-
-
-### Upgrading to CS2
-
-This is a large update to *cs2-multiserver* with updated configuration and instance directories. Also, some experimental automation features were added for CS:GO.
-
-If you are upgrading from [csgo-multiserver](https://github.com/dasisdormax/csgo-multiserver), you may need to reinstall SteamCMD for everything to work (`rm -r ~/Steam/steamcmd`). 
-
-While the CS:GO version worked quite reliably, CS2 support was not yet tested much. If you run into trouble or have a suggestion for extra features, feel free to open an issue or fork and work on *cs2-multiserver* yourself.
 
 
 ### Notable features
@@ -59,57 +50,91 @@ While the _MULTI_ features are the highlight, managing a single server for yours
 
 ### Prerequisites
 
-These scripts run in `bash` in _Linux_ or _WSL2_ for Windows, and require Python 3.8 or later and several other utilities. Also note that SteamCMD is a 32-bit application, so you'll have to install the 32-bit support libraries for your system, as described on [the SteamCMD Wiki page](https://developer.valvesoftware.com/wiki/SteamCMD#Linux). You will need at least 60 GB of disk space.
+These scripts run in `bash` in _Linux_ or _WSL2_ for Windows, and require Python 3.8+ and several other utilities. Also note that SteamCMD is a 32-bit application, so you'll have to install the 32-bit support libraries for your system, as described on [the SteamCMD Wiki page](https://developer.valvesoftware.com/wiki/SteamCMD#Linux). You will need at least 100 GB of disk space.
 
 For Ubuntu 22.04 LTS, use the following command:
 
 ```
-sudo apt install lib32gcc-s1 lib32stdc++6 jq unzip inotify-tools python3
+sudo apt install git tmux wget lib32gcc-s1 lib32stdc++6 jq unzip inotify-tools python3
 ```
 
 If you run a different Linux distribution, the commands and package names may differ. If you need to install additional applications, the script will tell you which commands are unavailable.
 
-SteamCMD downloads the server using an anonymous login. A Steam account is not required for setup.
+Run the server as a regular Linux user, not as root.
+
+Also, you need a Steam account that owns the game to host public CS2 dedicated servers. 
 
 
 ### Initial setup
 
 1. Use `git clone https://github.com/dasisdormax/cs2-multiserver.git` to clone this repository to whatever place you like.
-2. For easier invocation of the main script (just by typing `cs2-server` in your terminal), create a symlink with the following command: `ln -s /path/to/cs2-multiserver/msm /usr/local/bin/cs2-server`
-3. Run `cs2-server setup`. This will guide you through creating the initial configuration.
+2. For easier invocation of the main script (just by typing `cs2-server` in your terminal), create a symlink with the following command: `sudo ln -s /path/to/cs2-multiserver/msm /usr/local/bin/cs2-server`
+3. Run `cs2-server setup`. This will guide you through creating the initial configuration. The default game installation directory is `~/msm.d/cs2/base`. If you already have a CS2 installation, you can select its directory instead.
 4. Install the game server and updates with `cs2-server update` (possibly automated by cron)
 
-If an update is interrupted, run `cs2-server validate` to check the base game files. If that does not fix the installation, stop the base server and all instances, then run `cs2-server reinstall`. After confirmation, this deletes the contents of the base installation except its `msm.d` directory and downloads the game again. Back up any custom files in the base first.
- 
 
 ### Instances
 
-Note that individual servers are called _instances_. These share most of the files (like maps, textures, etc.) with the base installation, but can have their own configurations. The special command `@instance-name` selects the instance to run the future commands on. The command `@` without an instance name selects the base installation.
+Note that individual servers are called _instances_. These share most of the game files (like maps, textures, etc.) with the base installation, but can have their own configurations and plugins. The special command `@instance-name` selects the instance to run the future commands on. The command `@` without an instance name selects the base installation.
 
 If you only want to run a single server, it is not required to create a separate instance. You can simply run the base installation if you want to.
 
 Create your own instance (a fork of the base installation) named _test01_ using `cs2-server @test01 create`.
 
 
-### CounterStrikeSharp
+### Configuration
 
-Setup selects `PluginHelper` by default. You can change the selection in `MSM_ADDONS` in `~/msm.d/cs2/cfg/defaults.conf`. Existing `SourcemodHelper` entries in `MSM_ADDONS` remain valid as an alias. Restart each instance to install the pinned Metamod and CounterStrikeSharp packages. The helper uses the CounterStrikeSharp Linux package with the .NET runtime. Install plugins and their configuration under each instance's `game/csgo/addons/counterstrikesharp/` directory. The helper preserves those files when it updates the frameworks. Existing SourceMod files are not removed, but SourceMod and WarMod are no longer managed by the helper.
+Before launching, configure your instance by editing the following file with your text editor of choice:
 
-The helper adds Metamod to each instance's `gameinfo.gi`. Use `meta list` in the server console to check that CounterStrikeSharp loaded. Framework versions are pinned in `addons/PluginHelper/packages/` and may need updating after a CS2 release.
+* `~/msm.d/cs2/cfg/inst-test01/server.conf`
+  * (adjust `inst-test01` for other instances as needed, or use `base` for the base server)
 
-CounterStrikeSharp is pinned to v1.0.368, the last release with .NET 8. With CounterStrikeSharp v1.0.379 and its bundled .NET 10, the server crashes when quitting, which breaks our error handling. Plugins that require newer CounterStrikeSharp APIs or .NET 10 cannot run on this version. This older release may also lack fixes for current CS2 builds.
+Things to check:
 
-### Configuration and Environment Variables
-
-You can set most server configuration options by opening `~/msm.d/cs2/cfg/.../server.conf` with your text editor of choice. Most importantly, you need to set a separate `PORT` for every new instance (recommended: 27015, 27115, 27215, ...). You can also set some options on the command line, e.g. `MAP='de_nuke' cs2-server @lan01 start`.
+* Use a unique combination of `__IP__` and `__PORT__` for every new instance, your servers will fail to start otherwise. 
+  * _Recommendation:_ Keep `__IP__="0.0.0.0"`, change `__PORT__="27015"` to 27115, 27215, 27315, ...
+* Supply a separate Game Server Login Token as `GSLT="your-token"` (not needed for LAN-only servers)  
+  * _Manual option:_ Open <https://steamcommunity.com/dev/managegameservers> and create a token using app ID `730`.
+  * _Automatic option:_ Use the `SteamAPIHelper` [addon](docs/plugins.md) to automatically create tokens for your instances
 
 
 ### Usage, when fully set up
+
+Start your instance with `cs2-server @test01 start`, or use `cs2-server @ start` to run the base server. Players can join from the CS2 console with `connect server-ip:port`, e.g. `connect 192.168.1.10:27115`. For connections over the Internet, allow the configured UDP port through your firewall and forward it on your router if the server is behind one.
 
 * `cs2-server @... ( start | stop | restart )` to start/stop/restart the given server instance. The server will run in the background in a separate tmux environment.
 * `cs2-server @... exec ...` to execute some command in the server's console
 * `cs2-server @... console` to access the in-game console (= attach to the tmux environment) to manually enter commands. You can return to your original shell (detach) by typing CTRL-D, a frozen server can be killed using CTRL-K.
 * `cs2-server help`
+
+
+### Command Line / Environment options
+
+You can also set some options on the command line, e.g. `MAP='de_nuke' cs2-server @test01 start`. To change the default game mode, edit `__PRESET__="competitive"` in `server.conf`, e.g. to `__PRESET__="deathmatch"`. Restart the instance after changing its configuration. See [Configuration](docs/configuration.md) for more details.
+
+
+### Addons and Plugins
+
+Some optional features are provided as "Addons", which hook into the instance lifecycle:
+
+- `SteamAPIHelper`: Automates GSLT Server Token management and improves workshop support.
+- `PluginHelper`: Installs Metamod and CounterStrikeSharp for each instance.
+
+Enable / disable them during `cs2-server setup`, or enable them by setting `MSM_ADDONS="PluginHelper SteamAPIHelper"` in `~/msm.d/cs2/cfg/defaults.conf`.
+
+With the `PluginHelper` enabled, you can install CounterStrikeSharp plugins under `~/msm.d/cs2/inst-test01/game/csgo/addons/counterstrikesharp/`.
+
+See [plugins](docs/plugins.md) for addon selection, framework versions and plugin configuration.
+
+
+
+
+## Documentation
+
+* [FAQ](https://github.com/dasisdormax/cs2-multiserver/wiki/FAQ)
+* [Configuration](docs/configuration.md): presets, Workshop maps, custom server commands, launch options and GOTV
+* [Addons and Plugins](docs/plugins.md): per-instance plugins, addon selection and framework versions
+* [Maintenance and Troubleshooting](docs/maintenance.md): file locations, logs, disk space and installation recovery
 
 
 
