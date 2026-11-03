@@ -24,7 +24,7 @@ class Redactor:
         pos = 0
         while pos < len(chunk):
             if self.masking:
-                match = re.search(rb"\s", chunk[pos:])
+                match = re.search(rb"[^0-9a-zA-Z+_-]", chunk[pos:])
                 end = pos + match.start() if match else len(chunk)
                 output.extend(b"*" * (end - pos))
                 pos = end
