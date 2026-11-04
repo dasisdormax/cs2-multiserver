@@ -5,6 +5,8 @@
 
 ## Addon selection
 
+Run `cs2-server setup` again to change the addon selection. The menu starts with your saved choices. Setup keeps your other configuration settings.
+
 `MSM_ADDONS` selects helpers for the manager. These are separate from the game plugins you install in each instance. For example, to enable both bundled helpers, edit `~/msm.d/cs2/cfg/defaults.conf` and set:
 
 ```bash
@@ -14,6 +16,17 @@ MSM_ADDONS="PluginHelper SteamAPIHelper"
 Use `MSM_ADDONS=""` to disable both helpers. This does not uninstall game plugins or frameworks already installed in an instance.
 
 For automatic Game Server Login Tokens, see [Steam API Helper](configuration.md#steam-api-helper).
+
+
+## Setup hook
+
+Addons can register a handler for `Core.Setup::afterConfig`. Setup loads newly selected addons and calls this hook after saving the configuration, before the success output. The hook also runs when the user confirms the existing addon selection. Handlers receive the hook name as their first argument.
+
+```bash
+::registerHook Core.Setup::afterConfig MyAddon::setup
+```
+
+A deselected addon may still be loaded during the setup command. Its handler should check `MSM_ADDONS` before prompting the user.
 
 
 ## CounterStrikeSharp

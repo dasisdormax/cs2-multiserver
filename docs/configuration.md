@@ -141,7 +141,7 @@ For a manually supplied Game Server Login Token, follow the [README](../README.m
 MSM_ADDONS="PluginHelper SteamAPIHelper"
 ```
 
-Start an instance once to create `~/msm.d/cs2/addons/steam-api-helper/config.sh`. Add your [Steam Web API key](https://steamcommunity.com/dev/apikey) to that file:
+Setup asks for your [Steam Web API key](https://steamcommunity.com/dev/apikey) after saving the addon selection. Press Enter to skip this step. Run `cs2-server setup` again to add the key later, or edit `~/msm.d/cs2/addons/steam-api-helper/config.sh`:
 
 ```bash
 APIKEY="your-web-api-key"

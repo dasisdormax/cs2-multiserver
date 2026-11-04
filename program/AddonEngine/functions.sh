@@ -72,7 +72,7 @@
 	for module in $*; do
 		::execHandler $module load; done
 
-	return $errno
+	return ${errno:-0}
 }
 
 ::moduleDir () {

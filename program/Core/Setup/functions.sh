@@ -121,6 +121,17 @@ Core.Setup::beginSetup () {
 			The config file **$CFG** already exists!
 			If you want to start over, delete that file and run this command again.
 		EOF
+		Core.Setup::loadConfig || return
+		local previous_addons=$MSM_ADDONS
+		Core.Setup::selectAddons || return
+		if [[ $MSM_ADDONS != "$previous_addons" ]]; then
+			cat >> "$CFG" <<-EOF || return
+
+				# Addon selection updated by setup
+				MSM_ADDONS=$(printf '%q' "$MSM_ADDONS")
+			EOF
+		fi
+		Core.Setup::finishSetup
 		return
 	}
 
@@ -159,7 +170,7 @@ Core.Setup::beginSetup () {
 
 ############################### ADMIN INSTALLATION ##############################
 
-# Let the user choose bundled and user-provided addons for the initial config.
+# Let the user choose bundled and user-provided addons.
 Core.Setup::selectAddons () {
 	local dir name ADDON_DESCRIPTION input marker i found
 	local -a names=() descriptions=() selected=()
@@ -178,7 +189,14 @@ Core.Setup::selectAddons () {
 		builtin . "$dir/addon.info"
 		names+=("$name")
 		descriptions+=("${ADDON_DESCRIPTION:-No description available.}")
-		if [[ $name == PluginHelper || $name == SteamAPIHelper ]]; then
+		if [[ -e ${CFG:-} ]]; then
+			if [[ " $MSM_ADDONS " == *" $name "* ||
+			      $name == PluginHelper && " $MSM_ADDONS " == *" SourcemodHelper "* ]]; then
+				selected+=(1)
+			else
+				selected+=(0)
+			fi
+		elif [[ $name == PluginHelper || $name == SteamAPIHelper ]]; then
 			selected+=(1)
 		else
 			selected+=(0)
@@ -193,7 +211,7 @@ Core.Setup::selectAddons () {
 		Addons hook into the server management to add optional features.
 		This sets the MSM_ADDONS configuration option.
 	EOF
-	while :; do
+	while true; do
 		printf '\nWhich addons do you want to use?\n'
 		for ((i=0; i<${#names[@]}; i++)); do
 			marker=' '
@@ -273,17 +291,24 @@ Core.Setup::setupAsAdmin () {
 	# Create the initial instance configuration files
 	cp -rn "$APP_DIR"/cfg/* "$INSTCFGDIR" 2>/dev/null
 
-	Core.Setup::writeConfig && {
-		log <<< ""
-		success <<-EOF
-			Basic Setup Complete!
+	Core.Setup::writeConfig && Core.Setup::finishSetup
+}
 
-			Execute **$THIS_COMMAND install** to install or update the actual game files.
-			Of course, you can also copy the files from a different location.
 
-			Use **$THIS_COMMAND @name create** to create a new server instance out of
-			your base installation.  Each instance can be configured independently and
-			multiple instances can run simultaneously.
-		EOF
-	}
+Core.Setup::finishSetup () {
+	# Load newly selected addons before calling their setup handlers.
+	::loadAddons || return
+	::hookable Core.Setup::afterConfig || return
+
+	log <<< ""
+	success <<-EOF
+		Basic Setup Complete!
+
+		Execute **$THIS_COMMAND install** to install or update the actual game files.
+		Of course, you can also copy the files from a different location.
+
+		Use **$THIS_COMMAND @name create** to create a new server instance out of
+		your base installation.  Each instance can be configured independently and
+		multiple instances can run simultaneously.
+	EOF
 }
