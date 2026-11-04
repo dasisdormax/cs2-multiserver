@@ -94,8 +94,8 @@ Things to check:
 * Use a unique combination of `__IP__` and `__PORT__` for every new instance, your servers will fail to start otherwise.
   * _Recommendation:_ Keep `__IP__="0.0.0.0"`, change `__PORT__="27015"` to 27115, 27215, 27315, ...
 * Supply a separate Game Server Login Token as `GSLT="your-token"` (not needed for LAN-only servers)
-  * _Manual option:_ Open <https://steamcommunity.com/dev/managegameservers> and create a token using app ID `730`.
   * _Automatic option:_ Use the `SteamAPIHelper` [addon](docs/plugins.md) to automatically create tokens for your instances
+  * _Manual option:_ Open <https://steamcommunity.com/dev/managegameservers> and create a token using app ID `730`.
 
 
 ### Usage, when fully set up
@@ -135,6 +135,22 @@ See [plugins](docs/plugins.md) for addon selection, framework versions and plugi
 * [Configuration](docs/configuration.md): presets, Workshop maps, custom server commands, launch options and GOTV
 * [Addons and Plugins](docs/plugins.md): per-instance plugins, addon selection and framework versions
 * [Maintenance and Troubleshooting](docs/maintenance.md): file locations, logs, disk space and installation recovery
+
+
+
+
+## Support and Community
+
+I (@dasisdormax) originally created this project for my own use at LAN partys and it might not fit your or other people's use case. I don't supply regular updates anymore and cannot provide timely help with your problems.
+
+If you use cs2-multiserver and find it useful, please help other users with their problems or submit small patches through Github's pull requests.
+
+Example contributions:
+- Updated Metamod / CounterStrikeSharp versions
+- Improvements to documentation, User Guides
+- Add or fix server configuration (map selection, cvars, ...)
+
+You are welcome to use AI agents to work on this project, but should still personally own your changes. Limit your changes to the minimum that is necessary. Large external additions or refactors are unlikely to get merged.
 
 
 
