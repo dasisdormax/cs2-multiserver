@@ -24,8 +24,6 @@ Restart each instance to install the pinned Metamod and CounterStrikeSharp packa
 
 The helper adds Metamod to each instance's `gameinfo.gi`. Use `meta list` in the server console to check that CounterStrikeSharp loaded. Framework versions are pinned in `addons/PluginHelper/packages/` and may need updating after a CS2 release.
 
-CounterStrikeSharp is pinned to v1.0.368, the last release with .NET 8. With CounterStrikeSharp v1.0.379 and its bundled .NET 10, the server crashes when quitting, which breaks our error handling. Plugins that require newer CounterStrikeSharp APIs or .NET 10 cannot run on this version. This older release may also lack fixes for current CS2 builds.
-
 
 ## Separate plugins for each instance
 
