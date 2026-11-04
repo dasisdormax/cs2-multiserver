@@ -6,8 +6,11 @@
 SteamAPIHelper::saveToken () {
 	local TOKEN=$1 STEAMID=$2 TEMP
 	TEMP="${SAH_TOKEN_FILE}.tmp"
-	printf '%s\n%s\n' "$TOKEN" "$STEAMID" > "$TEMP" && mv -f "$TEMP" "$SAH_TOKEN_FILE"
-	rm -f "$TEMP"
+	cat > "$TEMP" <<-EOF
+		$TOKEN
+		$STEAMID
+	EOF
+	mv -f "$TEMP" "$SAH_TOKEN_FILE"
 	GSLT=$TOKEN
 }
 

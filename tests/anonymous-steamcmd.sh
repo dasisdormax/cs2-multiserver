@@ -21,7 +21,18 @@ log-cmd () {
   if [[ ${ACTION:-} == update ]]; then
     printf "Success! App '730' fully installed\n" > "$MSM_LOGFILE"
   else
-    printf '"730"\n{\n\t\t"branches"\n\t\t{\n\t\t\t"public"\n\t\t\t{\n\t\t\t\t"buildid" "123"\n\t\t\t}\n\t\t}\n}\n' > "$MSM_LOGFILE"
+    cat > "$MSM_LOGFILE" <<'EOF'
+"730"
+{
+		"branches"
+		{
+			"public"
+			{
+				"buildid" "123"
+			}
+		}
+}
+EOF
   fi
 }
 debug () { cat >/dev/null; }

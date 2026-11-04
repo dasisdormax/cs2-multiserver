@@ -12,6 +12,27 @@ Modules use namespaced functions such as `Core.Instance::select` and `App::build
 
 Output helpers in `program/Utils/output.sh` read messages from standard input. They support logging and formatting, and `error` and `fatal` return failure rather than terminating the shell. `log-cmd` runs a command with its arguments and preserves failure when logging is enabled. Debug output uses file descriptor 3.
 
+Use heredocs instead of `printf` for multi-line strings. Use `printf` inside a heredoc when a value needs formatting or Bash escaping.
+
+Good:
+
+```bash
+cat > "$config" <<-EOF
+	# Credentials
+	# Web API Auth Key
+	APIKEY=$(printf '%q' "$APIKEY")
+EOF
+```
+
+Bad:
+
+```bash
+(
+printf '%s\n' '# Credentials' '# Web API Auth Key'
+printf 'APIKEY=%q\n' "$APIKEY" 
+) > "$config"
+```
+
 ## Product and verification
 
 Read `README.md` for the project purpose and use the relevant files in `docs/` for configuration, addon, or maintenance changes. Configuration files are Bash code, and instance settings may override defaults. Consider the base installation as well as named instances when changing lifecycle behavior.

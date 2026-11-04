@@ -27,10 +27,21 @@ wget() {
 	esac
 }
 
-assert_file() { [[ $(cat "$SAH_TOKEN_FILE") == "$(printf '%s\n%s' "$1" "$2")" ]]; }
+assert_file() {
+	local expected
+	expected=$(cat <<-EOF
+		$1
+		$2
+	EOF
+	)
+	[[ $(cat "$SAH_TOKEN_FILE") == "$expected" ]]
+}
 old_id=76561198000000001
 new_id=76561198000000002
-printf 'old-token\n%s\n' "$old_id" > "$SAH_TOKEN_FILE"
+cat > "$SAH_TOKEN_FILE" <<-EOF
+	old-token
+	$old_id
+EOF
 SteamAPIHelper::checkExistingToken
 [[ $GSLT == reset-token ]]
 assert_file reset-token "$old_id"
@@ -40,7 +51,10 @@ SteamAPIHelper::checkExistingToken
 [[ $GSLT == new-token ]]
 assert_file new-token "$new_id"
 
-printf 'old-token\n%s\n' "$old_id" > "$SAH_TOKEN_FILE"
+cat > "$SAH_TOKEN_FILE" <<-EOF
+	old-token
+	$old_id
+EOF
 reset_status=8
 SteamAPIHelper::checkExistingToken
 [[ $GSLT == old-token ]]
