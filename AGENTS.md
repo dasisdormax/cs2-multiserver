@@ -37,7 +37,11 @@ printf 'APIKEY=%q\n' "$APIKEY"
 
 Read `README.md` for the project purpose and use the relevant files in `docs/` for configuration, addon, or maintenance changes. Configuration files are Bash code, and instance settings may override defaults. Consider the base installation as well as named instances when changing lifecycle behavior.
 
-Tests describe the implementation when they were written. Use them to check a theory or validate a change, not to decide product direction. Ask the user when behavior or a project decision is unclear. Run checks appropriate to the change; shell tests in `tests/` are standalone scripts, and Python tests are also in that directory. Avoid requiring a real Steam installation or changing a user's server data for routine checks.
+Tests describe the implementation when they were written. Do not try to infer product direction or intended functionality from tests. Ask the user when behavior or a project decision is unclear.
+
+Write a test to check a theory or validate a change. Write new tests, do not run or reuse existing tests unless asked explicitly (Exception: Benchmarks may be reused and updated). Avoid requiring a real Steam installation or changing a user's server data for routine checks.
+
+Shell tests in `tests/` are standalone scripts, and Python tests and benchmarks are also in that directory.
 
 ## Writing
 

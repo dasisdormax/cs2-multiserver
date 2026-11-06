@@ -76,7 +76,7 @@ def main():
     try:
         logfile = Path(logdir) / (datetime.datetime.now().strftime("%y%m%d_%H:%M:%S") + "-server.log")
         link = Path(logdir) / "server.log"
-        with logfile.open("wb") as log:
+        with logfile.open("wb", buffering=0) as log:
             link.unlink(missing_ok=True)
             link.symlink_to(logfile.absolute())
             # The server shares the terminal's process group. Let it handle signals
