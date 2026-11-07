@@ -62,7 +62,7 @@ To remove an instance, stop it with `cs2-server @test01 stop`, then delete `~/ms
 
 The commands `install`, `update` and `validate` operate on the shared base installation, regardless of the selected instance. If servers are running, the manager asks them to stop temporarily. The servers wait for the update to complete and auto-restart afterward. This allows unattended updates using `cs2-server update` in a cronjob or systemd timer.
 
-If an update is interrupted, run `cs2-server validate` to check the base game files. If that does not fix the installation, stop the base server and all instances, then run `cs2-server @ reinstall`. After confirmation, this deletes the contents of the base installation except its `msm.d` directory and downloads the game again. Back up any custom files in the base first.
+If an update fails or is interrupted, previously running servers will not auto-restart. Run `cs2-server validate` to check and repair the base game files. If that does not fix the installation, stop the base server and all instances, then run `cs2-server @ reinstall`. After confirmation, this deletes the contents of the base installation except its `msm.d` directory and downloads the game again. Back up any custom files in the base first.
 
 
 ## Upgrading from CS:GO to CS2
