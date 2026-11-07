@@ -83,13 +83,14 @@ bold () { perl -0777 -pe 's/\*\*(.*?)\*\*/\*\*\x1b[1m$1\x1b[22m\*\*/gs'; }
 
 ########################### LOGGING COMMAND WRAPPERS ###########################
 
-log-cmd () {
+log-cmd () (
 	[[ $MSM_LOGFILE ]] || {
-		$@
+		"$@"
 		return
 	}
-	stdbuf -o0 -e0 $@ | tee -a "$MSM_LOGFILE"
-}
+	set -o pipefail
+	stdbuf -o0 -e0 "$@" | tee -a "$MSM_LOGFILE"
+)
 
 
 

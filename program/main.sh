@@ -49,12 +49,14 @@ fi
 ############################### CHECK DEPENDENCIES ###############################
 
 # Check required programs
-local programs="sed awk tmux wget tar jq readlink inotifywait"
+local programs="sed awk tmux wget tar jq readlink inotifywait python3"
 local program
 for program in $programs; do
 	[[ -x $(which $program) ]] ||
 		fatal <<< "The program **$program** could not be found on your system!" || return
 done
+python3 -c 'import sys; sys.exit(sys.version_info < (3, 8))' ||
+	fatal <<< "Python 3.8 or later is required!" || return
 
 
 
@@ -94,11 +96,15 @@ fi
 
 Core.Setup::loadConfig
 ::loadAddons
+if (( $# == 1 )) && [[ $1 == setup ]]; then
+	Core.Setup::beginSetup
+	return
+fi
 INSTANCE="$DEFAULT_INSTANCE" Core.CommandLine::parseArguments "$@"
 
 local errno=$?
 # Insert space before ending the program (if it is not a remote command)
 [[ $MSM_REMOTE ]] || echo
-return $?
+return "$errno"
 
 } # end function main

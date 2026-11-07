@@ -51,13 +51,17 @@ Core.Server::requestStart () {
 			console using **$THIS_COMMAND @$INSTANCE console**.
 		EOF
 
+	if [[ -e "$INSTALL_DIR/msm.d/update-incomplete" ]]; then
+		promptN "The latest server update is incomplete. Launch anyway?" || return 1
+	fi
+
 	log <<< "Starting $INSTANCE_TEXT ..."
 	rm -f "$TMPDIR/stop"
 
 	# Load instance configuration
 	::hookable App::buildLaunchCommand || return
 	LAUNCH_DIR="${LAUNCH_DIR-"$INSTANCE_DIR"}"
-	LAUNCH_CMD_REDACTED=$(echo "$LAUNCH_CMD" | sed -E 's/[0-9a-fA-F]{10,}([0-9a-fA-F]{6})/******\1/g')
+	LAUNCH_CMD_REDACTED=$(echo "$LAUNCH_CMD" | sed -E 's/([0-9a-fA-F]{6})[0-9a-fA-F]{10,}/\1******/g')
 
 	info <<< "Server working directory: **$LAUNCH_DIR**"
 	info <<< "Server launch command:"
@@ -65,14 +69,11 @@ Core.Server::requestStart () {
 
 	cat > "$TMPDIR/server-start.sh"   <<-EOF
 			#! /bin/bash
-			$(declare -f timestamp)
-			cd "$LAUNCH_DIR"
-			SERVER_LOGFILE="$LOGDIR/\$(timestamp)-server.log"
-			LOG_LINK="$LOGDIR/server.log"
-			rm -f "\$LOG_LINK"
-			ln -s "\$SERVER_LOGFILE" "\$LOG_LINK"
-			stdbuf -o0 -e0 $LAUNCH_CMD 2>&1 | tee "\$SERVER_LOGFILE"
-			echo \$? > "$TMPDIR/server.exit-code"
+			export MSM_REDACT_APIKEY=$(printf '%q' "$APIKEY")
+			export MSM_REDACT_GSLT=$(printf '%q' "$GSLT")
+			exec python3 $(printf '%q' "$THIS_DIR/program/Core/Server/launcher.py") \\
+				$(printf '%q' "$LAUNCH_DIR") $(printf '%q' "$LOGDIR") \\
+				$(printf '%q' "$TMPDIR/server.exit-code") -- $LAUNCH_CMD
 		EOF
 
 	# TODO: App-specific variables to pass to server control, instead of port

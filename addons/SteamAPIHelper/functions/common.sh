@@ -2,6 +2,7 @@
 ## vim: noet:sw=0:sts=0:ts=4
 
 ::registerHook before~App::validateGSLT SteamAPIHelper::handleGSLT
+::registerHook Core.Setup::afterConfig SteamAPIHelper::setup
 
 SteamAPIHelper::vars () {
 	SAH_HOME="$USER_DIR/$APP/addons/steam-api-helper"
@@ -19,7 +20,7 @@ SteamAPIHelper::writeConfig () {
 	cat > "$SAH_CONFIG" <<-EOF
 		# Please add your Web API authentication key below
 		# Get one at: https://steamcommunity.com/dev/apikey
-		APIKEY="$APIKEY"
+		APIKEY=$(printf '%q' "$APIKEY")
 	EOF
 }
 
@@ -29,11 +30,33 @@ SteamAPIHelper::requireKey () {
 		A Steam Web API Authentication key is required to continue.
 		Get a Steam API Key at:
 	
-		    **https://steamcommunity.com/dev/apikey**
+		    ** https://steamcommunity.com/dev/apikey **
 		
 	EOF
 	read -p "Your Steam API Key: " APIKEY
 	[[ $APIKEY ]] || return
 	# TODO: Check if API Key is valid
+	SteamAPIHelper::writeConfig
+}
+
+SteamAPIHelper::setup () {
+	# A deselected addon may still be loaded during this setup command.
+	[[ " $MSM_ADDONS " == *" SteamAPIHelper "* ]] || return 0
+	SteamAPIHelper::vars
+	[[ $APIKEY ]] && return 0
+	out <<-EOF
+
+		SteamAPIHelper Setup
+		====================
+
+		SteamAPIHelper can create Game Server Login Tokens and access Workshop data.
+
+		Get a Steam Web API authentication key at:
+		    ** https://steamcommunity.com/dev/apikey **
+
+		Insert the key here, or press Enter to add the key later.
+	EOF
+	IFS= read -r -p "Steam Web API Auth Key: " APIKEY || return 1
+	[[ $APIKEY ]] || return 0
 	SteamAPIHelper::writeConfig
 }

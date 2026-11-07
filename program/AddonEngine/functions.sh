@@ -72,7 +72,7 @@
 	for module in $*; do
 		::execHandler $module load; done
 
-	return $errno
+	return ${errno:-0}
 }
 
 ::moduleDir () {
@@ -135,6 +135,10 @@ ALL_HOOKS=" "
 ::loadAddons () {
 	local addon
 	for addon in $MSM_ADDONS; do
+		if [[ $addon == SourcemodHelper ]]; then
+			warning <<< "SourcemodHelper has been retired in favor of PluginHelper. Run **$THIS_COMMAND setup** to update your selection."
+			continue
+		fi
 		::add $addon
 	done
 	::update

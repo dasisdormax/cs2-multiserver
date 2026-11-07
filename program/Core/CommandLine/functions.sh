@@ -46,9 +46,10 @@ $(printf "\x1b[36m%s\x1b[m"   "**INSTANCE-SPECIFIC COMMANDS:**")
              > CTRL-D to detach (return to outside) without killing the server
 
 $(printf "\x1b[36m%s\x1b[m"   "**ADMINISTRATION COMMANDS:** working on the base installation")
-    setup    > Configure this program and install dependencies
+    setup    > Configure this program and install dependencies. Run on its own.
     update   > Install/Update the game server
     validate > Repair broken/missing game files
+    reinstall > Delete base game files and install them again
 
 Commands will be executed in the order they are given. If a command fails,
 subsequent commands will not be executed.
@@ -109,7 +110,7 @@ Core.CommandLine::parseArguments () {
 	local ARGS=( )
 	while [[ $1 ]]; do
 		if [[ $1 =~ ^@ ]]; then
-			::hookable Core.CommandLine::exec "${ARGS[@]}"
+			::hookable Core.CommandLine::exec "${ARGS[@]}" || return
 			[[ ! ${1:1} =~ @ ]] && INSTANCE="${1:1}"
 			ARGS=( )
 		else
@@ -124,7 +125,7 @@ Core.CommandLine::parseArguments () {
 # TODO: Allow addons to define their own arguments and corresponding actions
 Core.CommandLine::exec () (
 
-	[[ $@ ]] || return
+	[[ $@ ]] || return 0
 
 	INSTANCE=${INSTANCE-"$DEFAULT_INSTANCE"}
 	Core.Instance::select
@@ -153,13 +154,13 @@ Core.CommandLine::exec () (
 
 		if   [[ ${SIMPLE_COMMANDS[$1]} ]]; then
 			debug <<< "Executing ${SIMPLE_COMMANDS[$1]}"
-			${SIMPLE_COMMANDS[$1]}
+			${SIMPLE_COMMANDS[$1]} || return
 
 		elif [[ ${ONEARG_COMMANDS[$1]} ]]; then
 			local fun=${ONEARG_COMMANDS[$1]}
 			shift
 			debug <<< "Executing $fun $1"
-			$fun "$1"
+			$fun "$1" || return
 
 		elif [[ ${GREEDY_COMMANDS[$1]} ]]; then
 			local fun=${GREEDY_COMMANDS[$1]}
@@ -168,14 +169,19 @@ Core.CommandLine::exec () (
 				[[ $1 ]] && args+=( "$1" )
 			done
 			debug <<< "Executing $fun $(quote "${args[@]}")"
-			$fun "${args[@]}"
+			$fun "${args[@]}" || return
 
 		else
 			log <<< ""
-			error <<< "Unknown command: **$1**"
+			if [[ $1 == setup ]]; then
+				error <<< "Setup must be run on its own. Run **$THIS_COMMAND setup** in a separate invocation."
+			else
+				error <<< "Unknown command: **$1**"
+			fi
+			return 1
 		fi
 
-		shift
+		shift || break
 	done ################ END LOOP ################
 )
 

@@ -36,12 +36,12 @@ App::buildLaunchCommand () {
 	::hookable App::validateGSLT
 	
 	######## Check PORT ########
-	local PID=$(ss -Hulpn sport = :$PORT | grep -Eo 'pid=[0-9]+')
-	if [[ $PID ]]; then
+	local bind_error
+	if ! bind_error=$(python3 "$APP_DIR/check-port.py" "$IP" "$PORT" 2>&1); then
 		error <<-EOF
-			Port **$PORT** is already in use.
+			Cannot bind UDP **$IP:$PORT**: $bind_error
 
-			Please specify a different PORT in **$INSTCFGDIR/server.conf**.
+			Check IP and PORT in **$INSTCFGDIR/server.conf**.
 		EOF
 		return
 	fi
@@ -117,7 +117,8 @@ App::buildLaunchCommand () {
 	)
 
 	LAUNCH_DIR="$INSTANCE_DIR/game/bin/linuxsteamrt64"
-	LAUNCH_CMD="$(quote "./cs2" "${LAUNCH_ARGS[@]}")"
+	local library_path="$INSTANCE_DIR/game/bin/linuxsteamrt64:$HOME/Steam/steamcmd/linux64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+	LAUNCH_CMD="env $(printf '%q' "LD_LIBRARY_PATH=$library_path") $(quote "./cs2" "${LAUNCH_ARGS[@]}")"
 }
 
 
@@ -136,10 +137,10 @@ App::shutdownServer () {
 }
 
 App::killServer () {
-	# CS2 survives a hangup of the launching terminal, so we kill the process owning the socket directly
-	local PID=$(ss -Hulpn sport = :$PORT | grep -Eo 'pid=[0-9]+')
-	[[ $PID ]] || return
-	PID=${PID#*=}
-	debug <<< "Killing server with pid = $PID ..."
-	kill $PID
+	# server-start.sh execs the launcher, so the pane PID identifies it.
+	local pid
+	pid=$(tmux display-message -p -t ":$APP-server.0" '#{pane_pid}') || return
+	[[ $pid =~ ^[0-9]+$ ]] || return 1
+	debug <<< "Requesting forced shutdown from launcher $pid ..."
+	kill -USR1 "$pid"
 }

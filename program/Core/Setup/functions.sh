@@ -10,7 +10,6 @@
 
 
 Core.Setup::registerCommands () {
-	simpleCommand "Core.Setup::beginSetup" setup
 	simpleCommand "Core.Setup::printConfig" print-config
 }
 
@@ -121,6 +120,17 @@ Core.Setup::beginSetup () {
 			The config file **$CFG** already exists!
 			If you want to start over, delete that file and run this command again.
 		EOF
+		Core.Setup::loadConfig || return
+		local previous_addons=$MSM_ADDONS
+		Core.Setup::selectAddons || return
+		if [[ $MSM_ADDONS != "$previous_addons" ]]; then
+			cat >> "$CFG" <<-EOF || return
+
+				# Addon selection updated by setup
+				MSM_ADDONS=$(printf '%q' "$MSM_ADDONS")
+			EOF
+		fi
+		Core.Setup::finishSetup
 		return
 	}
 
@@ -158,6 +168,75 @@ Core.Setup::beginSetup () {
 
 
 ############################### ADMIN INSTALLATION ##############################
+
+# Let the user choose bundled and user-provided addons.
+Core.Setup::selectAddons () {
+	local dir name ADDON_DESCRIPTION input marker i found
+	local -a names=() descriptions=() selected=()
+	for dir in "$THIS_DIR"/addons/* "$USER_DIR"/addons/*; do
+		[[ -d $dir && -r $dir/addon.info ]] || continue
+		name=${dir##*/}
+		[[ $name == AddonTemplate || ! $name =~ ^[a-zA-Z0-9_-]+$ ]] && continue
+		# Bundled addons take precedence over user addons with the same name.
+		found=
+		for i in "${names[@]}"; do
+			[[ $i == "$name" ]] && found=1 && break
+		done
+		[[ $found ]] && continue
+		ADDON_DESCRIPTION=
+		# Load metadata in this function so its local declarations remain available.
+		builtin . "$dir/addon.info"
+		names+=("$name")
+		descriptions+=("${ADDON_DESCRIPTION:-No description available.}")
+		if [[ -e ${CFG:-} ]]; then
+			if [[ " $MSM_ADDONS " == *" $name "* ]]; then
+				selected+=(1)
+			else
+				selected+=(0)
+			fi
+		elif [[ $name == PluginHelper || $name == SteamAPIHelper ]]; then
+			selected+=(1)
+		else
+			selected+=(0)
+		fi
+	done
+
+	log <<-EOF
+
+		Addons
+		======
+
+		Addons hook into the server management to add optional features.
+		This sets the MSM_ADDONS configuration option.
+	EOF
+	while true; do
+		printf '\nWhich addons do you want to use?\n'
+		for ((i=0; i<${#names[@]}; i++)); do
+			marker=' '
+			[[ ${selected[i]} == 1 ]] && marker=X
+			printf '%d. [%s] %s - %s\n' "$((i+1))" "$marker" "${names[i]}" "${descriptions[i]}"
+		done
+		printf 'Enter a number to toggle selection, or press Enter to confirm: '
+		IFS= read -r input || return 1
+		[[ -z $input ]] && break
+		found=
+		for ((i=0; i<${#names[@]}; i++)); do
+			if [[ $input == "$((i+1))" ]]; then
+				selected[i]=$((1 - selected[i]))
+				found=1
+				break
+			fi
+		done
+		[[ $found ]] || printf 'Invalid selection. Enter a number from the list.\n'
+	done
+
+	MSM_ADDONS=
+	for ((i=0; i<${#names[@]}; i++)); do
+		[[ ${selected[i]} == 1 ]] || continue
+		MSM_ADDONS="${MSM_ADDONS:+$MSM_ADDONS }${names[i]}"
+	done
+}
+
 
 # TODO: make this function smaller
 Core.Setup::setupAsAdmin () {
@@ -198,6 +277,8 @@ Core.Setup::setupAsAdmin () {
 		Core.BaseInstallation::create
 	done
 
+	Core.Setup::selectAddons || return
+
 	# Final Steps
 	Core.Instance::select
 	App::finalizeInstance
@@ -208,18 +289,24 @@ Core.Setup::setupAsAdmin () {
 	# Create the initial instance configuration files
 	cp -rn "$APP_DIR"/cfg/* "$INSTCFGDIR" 2>/dev/null
 
-	MSM_ADDONS=""
-	Core.Setup::writeConfig && {
-		log <<< ""
-		success <<-EOF
-			Basic Setup Complete!
+	Core.Setup::writeConfig && Core.Setup::finishSetup
+}
 
-			Execute **$THIS_COMMAND install** to install or update the actual game files.
-			Of course, you can also copy the files from a different location.
 
-			Use **$THIS_COMMAND @name create** to create a new server instance out of
-			your base installation.  Each instance can be configured independently and
-			multiple instances can run simultaneously.
-		EOF
-	}
+Core.Setup::finishSetup () {
+	# Load newly selected addons before calling their setup handlers.
+	::loadAddons || return
+	::hookable Core.Setup::afterConfig || return
+
+	log <<< ""
+	success <<-EOF
+		Basic Setup Complete!
+
+		Execute **$THIS_COMMAND install** to install or update the actual game files.
+		Of course, you can also copy the files from a different location.
+
+		Use **$THIS_COMMAND @name create** to create a new server instance out of
+		your base installation.  Each instance can be configured independently and
+		multiple instances can run simultaneously.
+	EOF
 }

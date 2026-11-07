@@ -65,8 +65,9 @@ EOF
 ############################### PROGRAM STARTS HERE ##############################
 ##################################################################################
 
-Core.Setup::loadConfig
+Core.Setup::loadConfig || return
 Core.Instance::select
+::loadAddons || return
 
 ############ STATES ############
 # - UPDATING                   #
@@ -76,7 +77,10 @@ Core.Instance::select
 # - STOPPING                   #
 # - STOPPED                    #
 ################################
-STATE="UPDATING"
+STATE="LAUNCHING"
+if Core.Wrapper::isUpdating; then
+	STATE="UPDATING"
+fi
 
 while [[ $STATE != "STOPPED" ]]; do
 
@@ -91,6 +95,9 @@ while [[ $STATE != "STOPPED" ]]; do
 				inotifywait -qq -t $(( 21600 - TIME_DIFF )) -e close_write,delete_self "$INSTALL_DIR/msm.d/update" "$TMPDIR"
 				sleep .1
 				continue
+			elif [[ -e "$INSTALL_DIR/msm.d/update-incomplete" ]]; then
+				error <<< "The latest server update is incomplete. Stopping the controller without restarting the server."
+				return 1
 			else
 				STATE="LAUNCHING"
 			fi
@@ -99,7 +106,10 @@ while [[ $STATE != "STOPPED" ]]; do
 		( LAUNCHING )
 			info <<< "Launching $APP server ..."
 			rm -f "$TMPDIR/server.exit-code"
-			Core.Wrapper::launchServer "$@"
+			Core.Wrapper::launchServer "$@" || {
+				error <<< "Server launch failed. Stopping the controller."
+				return 1
+			}
 			STATE="RUNNING"
 			;;
 
@@ -125,6 +135,7 @@ while [[ $STATE != "STOPPED" ]]; do
 
 				if (( $errno )); then
 					log <<< "Relaunching server due to a crash ..."
+					sleep 2
 					STATE="LAUNCHING"
 				elif Core.Wrapper::isUpdating; then
 					STATE="UPDATING"
