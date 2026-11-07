@@ -1,7 +1,7 @@
 #! /bin/bash
 
-::registerHook before~App::buildLaunchCommand PluginHelper::initVars
-::registerHook after~App::buildLaunchCommand PluginHelper::updateInstance
+::registerHook before~Core.Wrapper::prepareLaunch PluginHelper::initVars
+::registerHook after~Core.Wrapper::prepareLaunch PluginHelper::updateInstance
 
 PluginHelper::updateInstance () (
 	trap 'rm -rf -- "$PH_TMP_DIR"' EXIT

@@ -65,8 +65,9 @@ EOF
 ############################### PROGRAM STARTS HERE ##############################
 ##################################################################################
 
-Core.Setup::loadConfig
+Core.Setup::loadConfig || return
 Core.Instance::select
+::loadAddons || return
 
 ############ STATES ############
 # - UPDATING                   #
@@ -99,7 +100,10 @@ while [[ $STATE != "STOPPED" ]]; do
 		( LAUNCHING )
 			info <<< "Launching $APP server ..."
 			rm -f "$TMPDIR/server.exit-code"
-			Core.Wrapper::launchServer "$@"
+			Core.Wrapper::launchServer "$@" || {
+				error <<< "Server launch failed. Stopping the controller."
+				return 1
+			}
 			STATE="RUNNING"
 			;;
 

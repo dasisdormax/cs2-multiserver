@@ -32,18 +32,20 @@ Core.Wrapper::isServerRunning () [[ $(tmux list-windows) =~ $APP-server ]]
 ################################ SERVER CONTROL ################################
 
 Core.Wrapper::launchServer () {
-	# TODO: allow app-specific modifications
-	[[ $INSTALL_DIR/msm.d/app -nt $INSTANCE_DIR/msm.d/app ]] && (
-		info <<-EOF
-			The base installation has been updated since the last launch.
-			Synchronizing ...
-		EOF
-		cd "$INSTANCE_DIR"
-		Core.Instance::symlinkFiles
-		App::finalizeInstance
-		App::applyInstancePermissions
-		touch "msm.d/app"
-	)
+	if [[ $INSTALL_DIR/msm.d/app -nt $INSTANCE_DIR/msm.d/app ]]; then
+		(
+			info <<-EOF
+				The base installation has been updated since the last launch.
+				Synchronizing ...
+			EOF
+			cd "$INSTANCE_DIR" || return
+			Core.Instance::symlinkFiles || return
+			App::finalizeInstance || return
+			App::applyInstancePermissions || return
+			touch "msm.d/app"
+		) || return
+	fi
+	::hookable Core.Wrapper::prepareLaunch || return
 	tmux new-window -n "$APP-server" /bin/bash "$TMPDIR/server-start.sh"
 }
 
