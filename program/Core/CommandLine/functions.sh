@@ -125,7 +125,7 @@ Core.CommandLine::parseArguments () {
 # TODO: Allow addons to define their own arguments and corresponding actions
 Core.CommandLine::exec () (
 
-	[[ $@ ]] || return
+	[[ $@ ]] || return 0
 
 	INSTANCE=${INSTANCE-"$DEFAULT_INSTANCE"}
 	Core.Instance::select
