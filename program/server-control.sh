@@ -135,6 +135,7 @@ while [[ $STATE != "STOPPED" ]]; do
 
 				if (( $errno )); then
 					log <<< "Relaunching server due to a crash ..."
+					sleep 2
 					STATE="LAUNCHING"
 				elif Core.Wrapper::isUpdating; then
 					STATE="UPDATING"
