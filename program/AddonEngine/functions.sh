@@ -133,10 +133,12 @@ ALL_HOOKS=" "
 
 
 ::loadAddons () {
-	local addon dir target canonical canonical_dir
+	local addon
 	for addon in $MSM_ADDONS; do
-		# Keep configurations written before the addon was renamed working.
-		[[ $addon == SourcemodHelper ]] && addon=PluginHelper
+		if [[ $addon == SourcemodHelper ]]; then
+			warning <<< "SourcemodHelper has been retired in favor of PluginHelper. Run **$THIS_COMMAND setup** to update your selection."
+			continue
+		fi
 		::add $addon
 	done
 	::update

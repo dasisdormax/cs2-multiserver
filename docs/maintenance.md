@@ -58,11 +58,11 @@ You can delete old timestamped logs you no longer need. Stop the affected instan
 To remove an instance, stop it with `cs2-server @test01 stop`, then delete `~/msm.d/cs2/inst-test01`. Its configuration and logs remain under `cfg/inst-test01` and `log/inst-test01`, so you can keep or remove those separately. Keep the base installation while other instances still use it.
 
 
-## Repairing the installation
+## Updating and repairing the installation
 
-If an update is interrupted, run `cs2-server validate` to check the base game files. If that does not fix the installation, stop the base server and all instances, then run `cs2-server reinstall`. After confirmation, this deletes the contents of the base installation except its `msm.d` directory and downloads the game again. Back up any custom files in the base first.
+The commands `install`, `update` and `validate` operate on the shared base installation, regardless of the selected instance. If servers are running, the manager asks them to stop temporarily. The servers wait for the update to complete and auto-restart afterward. This allows unattended updates using `cs2-server update` in a cronjob or systemd timer.
 
-`update`, `validate` and `reinstall` operate on the shared base installation, regardless of the selected instance. The manager pauses running servers for the update and resumes them afterwards.
+If an update is interrupted, run `cs2-server validate` to check the base game files. If that does not fix the installation, stop the base server and all instances, then run `cs2-server @ reinstall`. After confirmation, this deletes the contents of the base installation except its `msm.d` directory and downloads the game again. Back up any custom files in the base first.
 
 
 ## Upgrading from CS:GO to CS2

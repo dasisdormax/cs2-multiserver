@@ -145,6 +145,10 @@ Core.BaseInstallation::requestRepair () {
 }
 
 Core.BaseInstallation::requestReinstall () (
+	[[ ! $INSTANCE ]] || {
+		error <<< "Reinstall requires the base installation to be selected. Run **$THIS_COMMAND @ reinstall**."
+		return 1
+	}
 	requireUpdater || return
 	Core.BaseInstallation::isExisting || return 1
 	local base_path
@@ -218,6 +222,15 @@ Core.BaseInstallation::isUpToDate () {
 }
 
 
+Core.BaseInstallation::hasRunningInstances () (
+	for INSTANCE in "" $(Core.Instance::listInstances); do
+		Core.Instance::select
+		Core.Server::isRunning && return 0
+	done
+	return 1
+)
+
+
 stopAllInstances () {
 	########## Tell running instances that the update is starting soon
 
@@ -227,25 +240,13 @@ stopAllInstances () {
 
 	########## Stop running instances
 
-	if Core.Instance::isRunnableInstance; then
-		local isRunning=
-		local instances="$(Core.Instance::listInstances)";
-		for inst in "" $instances; do
-			[[ $isRunning ]] && break
-			(
-				INSTANCE=$inst
-				Core.Instance::select
-				Core.Server::isRunning
-			) && isRunning=1
-		done
-		[[ $isRunning ]] || return
+	Core.BaseInstallation::hasRunningInstances || return 0
 		
 		log <<< "Waiting $UPDATE_WAITTIME seconds for running instances to stop ..."
-		while (( $(date +%s) < $UPDATE_TIME )); do 
-			sleep 1;
+	while (( $(date +%s) < UPDATE_TIME )); do
+		sleep 1
 		done
 		log <<< ""
-	fi
 }
 
 

@@ -20,7 +20,7 @@ For automatic Game Server Login Tokens, see [Steam API Helper](configuration.md#
 
 ## CounterStrikeSharp
 
-Enable the `PluginHelper` addon to assist with CounterStrikeSharp setup (`SourcemodHelper` works as alias for compatibility).
+Enable the `PluginHelper` addon to assist with CounterStrikeSharp setup. The former `SourcemodHelper` addon has been retired.
 
 Restart each instance to install the pinned Metamod and CounterStrikeSharp packages. The helper uses the CounterStrikeSharp Linux package with bundled .NET runtime. Install plugins and their configuration under each instance's `game/csgo/addons/counterstrikesharp/` directory. The helper preserves those files when it updates the frameworks. Existing SourceMod files are not removed, but SourceMod is no longer managed by the helper.
 

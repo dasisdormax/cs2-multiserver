@@ -10,7 +10,6 @@
 
 
 Core.Setup::registerCommands () {
-	simpleCommand "Core.Setup::beginSetup" setup
 	simpleCommand "Core.Setup::printConfig" print-config
 }
 
@@ -190,8 +189,7 @@ Core.Setup::selectAddons () {
 		names+=("$name")
 		descriptions+=("${ADDON_DESCRIPTION:-No description available.}")
 		if [[ -e ${CFG:-} ]]; then
-			if [[ " $MSM_ADDONS " == *" $name "* ||
-			      $name == PluginHelper && " $MSM_ADDONS " == *" SourcemodHelper "* ]]; then
+			if [[ " $MSM_ADDONS " == *" $name "* ]]; then
 				selected+=(1)
 			else
 				selected+=(0)

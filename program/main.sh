@@ -96,11 +96,15 @@ fi
 
 Core.Setup::loadConfig
 ::loadAddons
+if (( $# == 1 )) && [[ $1 == setup ]]; then
+	Core.Setup::beginSetup
+	return
+fi
 INSTANCE="$DEFAULT_INSTANCE" Core.CommandLine::parseArguments "$@"
 
 local errno=$?
 # Insert space before ending the program (if it is not a remote command)
 [[ $MSM_REMOTE ]] || echo
-return $?
+return "$errno"
 
 } # end function main
